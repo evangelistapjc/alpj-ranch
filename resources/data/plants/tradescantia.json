@@ -1,0 +1,49 @@
+{
+  "id": "TRA",
+  "name": "Tradescantia \"Feeling Dreamy\"",
+  "botanical": "Tradescantia cv.",
+  "sprite": "💜",
+  "location": "kitchen",
+  "zone": "bright",
+  "stage": "growing",
+  "difficulty": "easy",
+  "medium": "soil",
+  "currentStatus": "Slightly damp — good, no action needed",
+  "growLight": false,
+  "waterDays": 10,
+  "waterBucket": "regular",
+  "headline": "Fast, forgiving, colorful — and your kitchen's direct sun keeps it vivid.",
+  "water": "Let the top inch dry; ~weekly. Droopy = drink me. Hates soggy.",
+  "light": "Bright indirect + the kitchen's direct sun is perfect for holding its pink/purple.",
+  "soil": "Well-draining mix + perlite.",
+  "temp": "60–80°F; keep away from cold drafts.",
+  "humidity": "Likes moderate–high; crispy tips mean dry air.",
+  "fertilizer": "Half-strength monthly, spring–fall.",
+  "repot": "Yearly; a wide, shallow pot suits it.",
+  "propagate": "Ridiculously easy — cuttings root in soil or water. Pinch tips to stay bushy.",
+  "tips": [
+    "Pinch it back often — every pinch is a free cutting.",
+    "Refresh a leggy pot once a year by cutting it back.",
+    "Wear gloves when pruning — sap can irritate skin."
+  ],
+  "issues": [
+    {
+      "sign": "Leggy, gone green",
+      "fix": "More light; pinch back."
+    },
+    {
+      "sign": "Brown crispy tips",
+      "fix": "Low humidity."
+    },
+    {
+      "sign": "Mushy base",
+      "fix": "Root rot; re-root healthy tips."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Bloomscape",
+      "url": "https://bloomscape.com/plant-care-guide/tradescantia/"
+    }
+  ]
+}

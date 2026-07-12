@@ -9,26 +9,32 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ALPJ Ranch" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="icons/icon-180.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="resources/stylesheet.css">
-    <script src="resources/main.js" defer></script>
+    <link rel="apple-touch-icon" href="resources/icons/icon-180.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Fredoka:wght@500;600;700&family=Klee+One:wght@400;600&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="resources/css/stylesheet.css" />
+    <script type="module" src="resources/js/main.js"></script>
   </head>
   <body>
+    <!-- App chrome is rendered by views.renderShell() into #app -->
     <div class="wrap" id="app">
       <div class="loading pixel">🌱 Loading ALPJ Ranch…</div>
     </div>
-    <div class="scrim" id="scrim" onclick="if(event.target===this)closeModal()">
+
+    <!-- Static modal shell; contents filled by views.renderModal*() -->
+    <div class="scrim" id="scrim">
       <div class="modal panel" role="dialog" aria-modal="true" aria-labelledby="mName">
-        <div class="m-top"><span class="m-sprite" id="mSprite">🌱</span>
+        <div class="m-top">
+          <span class="m-sprite" id="mSprite">🌱</span>
           <div><h3 id="mName" class="pixel">Plant</h3><div class="m-bot" id="mBot"></div></div>
-          <button class="m-close" onclick="closeModal()">✕</button></div>
+          <button class="m-close" data-action="close" aria-label="Close">✕</button>
+        </div>
         <div class="m-tabs" id="mTabs"></div>
         <div class="m-body" id="mBody"></div>
       </div>
     </div>
-    <div class="toast" id="toast"></div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

@@ -1,0 +1,49 @@
+{
+  "id": "SOH",
+  "name": "Variegated String of Hearts",
+  "botanical": "Ceropegia woodii f. variegata",
+  "sprite": "💗",
+  "location": "bedroom",
+  "zone": "bright",
+  "stage": "growing",
+  "difficulty": "moderate",
+  "medium": "soil",
+  "currentStatus": "A bit dry — fine; give a soak in the next day or two",
+  "growLight": true,
+  "waterDays": 18,
+  "waterBucket": "sip",
+  "headline": "Your light diva. More light = pinker hearts, tighter spacing.",
+  "water": "Soak-and-dry. Let it dry out almost fully, then water thoroughly. ~every 2.5–3 wks here.",
+  "light": "The hungriest plant you own. Brightest indirect light — but even your bay window is indirect, so a grow light is the real fix. Low light = hearts space out & lose pink.",
+  "soil": "Gritty succulent mix — 50–70% pumice/perlite/coarse sand in a well-draining pot.",
+  "temp": "Warm-loving; happy at your indoor temps, keep above ~40°F.",
+  "humidity": "Low. It's a succulent — no misting needed.",
+  "fertilizer": "Light feeder. Half-strength, once a month spring–summer only.",
+  "repot": "Rarely. Shallow pot; it grows a caudex and likes snug roots.",
+  "propagate": "Very easy — stem cuttings or the bead-like tubers pressed into soil.",
+  "tips": [
+    "If it's all green with big gaps, it's begging for light.",
+    "A cheap grow light does more for this plant than anything else in your home.",
+    "When unsure, don't water — it shrugs off drought, not wet feet."
+  ],
+  "issues": [
+    {
+      "sign": "Leggy vines, faded pink, wide gaps",
+      "fix": "Not enough light — grow light."
+    },
+    {
+      "sign": "Mushy stems",
+      "fix": "Overwatered. Dry fully; check for rot."
+    },
+    {
+      "sign": "Crispy hearts",
+      "fix": "Too-intense direct sun or long drought."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Ohio Tropics",
+      "url": "https://www.ohiotropics.com/2022/11/16/variegated-string-of-hearts-care/"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "MNY",
+  "name": "Money Tree",
+  "botanical": "Pachira aquatica · braided",
+  "sprite": "🌴",
+  "location": "living",
+  "zone": "medium",
+  "stage": "growing",
+  "difficulty": "moderate",
+  "medium": "soil",
+  "currentStatus": "A bit dry — check finger 2\" down; water if dry",
+  "growLight": false,
+  "waterDays": 12,
+  "waterBucket": "regular",
+  "headline": "All-green & understory-adapted — one of your more low-light-friendly plants. Pet-safe.",
+  "water": "Overwatering is the #1 killer. Water when top 1–2\" dry, err dry (~12–14 days when cool).",
+  "light": "Prefers bright indirect but tolerates medium/light shade. Direct sun scorches. Rotate.",
+  "soil": "Well-draining, rich — peat/loam + sand or perlite. Good drainage is non-negotiable.",
+  "temp": "65–85°F; above ~50°F, away from cold drafts.",
+  "humidity": "Likes 40–60%; brown crispy tips = air too dry.",
+  "fertilizer": "Half-strength, once a month spring–summer. Skip winter.",
+  "repot": "Every 2–3 yrs; it dislikes being moved — pick a spot and leave it.",
+  "propagate": "Stem cuttings root best in a moist medium (soil, not water).",
+  "tips": [
+    "When in doubt, don't water.",
+    "Rotate a quarter-turn each watering.",
+    "Stable home — drafts/moves trigger leaf drop."
+  ],
+  "issues": [
+    {
+      "sign": "Yellowing leaves",
+      "fix": "Overwatering / early rot."
+    },
+    {
+      "sign": "Brown crispy tips",
+      "fix": "Underwater / dry air."
+    },
+    {
+      "sign": "Sudden leaf drop",
+      "fix": "Cold draft or a move."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Soltech",
+      "url": "https://soltech.com/products/money-tree-care"
+    }
+  ]
+}
