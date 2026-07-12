@@ -1,0 +1,49 @@
+{
+  "id": "HOY",
+  "name": "Hoya obovata",
+  "botanical": "Hoya obovata (fresh cutting)",
+  "sprite": "🌸",
+  "location": "bedroom",
+  "zone": "bright",
+  "stage": "establishing",
+  "difficulty": "moderate",
+  "medium": "water",
+  "currentStatus": "Rooting in water — refresh the water ~weekly, top up as needed",
+  "growLight": false,
+  "waterDays": 16,
+  "waterBucket": "sip",
+  "headline": "Freshly propagated — rooting in water until it takes hold.",
+  "water": "In water now: refresh every ~5–7 days, keep nodes submerged. Once potted: semi-succulent, let soil dry almost fully (~2 wks).",
+  "light": "Bright indirect. Not a low-light plant; it won't bloom without good light.",
+  "soil": "When you pot it: chunky & airy — potting mix + orchid bark + perlite.",
+  "temp": "65–85°F, no cold drafts. Keep off cold windowsills at night.",
+  "humidity": "Moderate; cuttings root faster with a little extra humidity.",
+  "fertilizer": "Skip while rooting. Once established, dilute feed spring–summer.",
+  "repot": "Every 2–3 yrs. Likes to be pot-bound (triggers blooms later).",
+  "propagate": "Already done! Roots in water, moss, or perlite from a 2–3 node cutting.",
+  "tips": [
+    "Pot it up once roots hit ~1–2 inches.",
+    "Give it months to establish — slow growth is normal.",
+    "Thick leaves store water, so once potted, err dry."
+  ],
+  "issues": [
+    {
+      "sign": "Slimy stem in water",
+      "fix": "Change water more often; trim rot."
+    },
+    {
+      "sign": "No roots after weeks",
+      "fix": "More warmth + bright indirect light."
+    },
+    {
+      "sign": "Yellowing leaf",
+      "fix": "Normal for one old leaf; worry if several."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Ohio Tropics",
+      "url": "https://www.ohiotropics.com/2020/04/17/hoya-obovata-care/"
+    }
+  ]
+}

@@ -1,46 +1,65 @@
-/* ALPJ Ranch service worker — offline app shell + data caching */
-const CACHE = 'alpj-ranch-v1';
+// ALPJ Ranch service worker — MUST live at the site root so its scope covers
+// the whole app. Cache-first for the app shell; network-first for JSON data.
+const VERSION = 'alpj-v3';
 const CORE = [
-  './', './index.html', './manifest.webmanifest',
-  './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png',
-  './data/index.json', './data/home.json'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './resources/css/stylesheet.css',
+  './resources/js/main.js',
+  './resources/js/config.js',
+  './resources/js/state.js',
+  './resources/js/weather.js',
+  './resources/js/views.js',
+  './resources/js/actions.js',
+  './resources/js/events.js',
+  './resources/data/index.json',
+  './resources/data/home.json',
+  './resources/data/almanac.json',
+  './resources/icons/icon-192.png',
+  './resources/icons/icon-512.png',
+  './resources/icons/icon-180.png'
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    await cache.addAll(CORE).catch(() => {});
-    // also cache every plant JSON listed in the index
-    try {
-      const idx = await (await fetch('./data/index.json')).json();
-      await cache.addAll((idx.plants || []).map((p) => './data/' + p));
-    } catch (_) {}
-    self.skipWaiting();
-  })());
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
-    self.clients.claim();
-  })());
+  e.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url);
-  // Only handle same-origin GETs; let weather API + fonts hit the network directly.
-  if (e.request.method !== 'GET' || url.origin !== location.origin) return;
-  e.respondWith((async () => {
-    const cached = await caches.match(e.request);
-    if (cached) return cached;
-    try {
-      const res = await fetch(e.request);
-      const cache = await caches.open(CACHE);
-      cache.put(e.request, res.clone());
+  const { request } = e;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+
+  // never cache the live weather API
+  if (url.hostname.endsWith('open-meteo.com')) return;
+
+  // network-first for our JSON data (so edits show up), fall back to cache
+  if (url.pathname.includes('/resources/data/')){
+    e.respondWith(
+      fetch(request).then((res) => {
+        const copy = res.clone();
+        caches.open(VERSION).then((c) => c.put(request, copy));
+        return res;
+      }).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // cache-first for everything else (app shell, fonts, icons)
+  e.respondWith(
+    caches.match(request).then((hit) => hit || fetch(request).then((res) => {
+      if (res.ok && url.origin === location.origin){
+        const copy = res.clone();
+        caches.open(VERSION).then((c) => c.put(request, copy));
+      }
       return res;
-    } catch (_) {
-      return cached || Response.error();
-    }
-  })());
+    }).catch(() => caches.match('./index.html')))
+  );
 });

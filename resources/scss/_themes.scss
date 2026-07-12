@@ -1,0 +1,56 @@
+// ---------------------------------------------------------------------------
+// Themes — each overrides the CSS custom properties + a few structural bits.
+// ---------------------------------------------------------------------------
+
+/* ===== Studio Ghibli — soft, painterly ===== */
+[data-theme="ghibli"] {
+  --wheat:#f8f4e6; --wheat-2:#ece5cf; --wood-d:#6f8f6a; --wood:#8caf7c; --wood-l:#cadfb4;
+  --soil:#5f7f88; --soil-d:#436068; --leaf:#7aa868; --leaf-d:#4f7d48; --mint:#c2e2b2;
+  --sky:#8fc7dd; --sky-d:#5091b0; --ink:#3f4a42; --ink-soft:#6f7c6c; --pink:#e6a2b0;
+  --clay:#dd9160; --gold:#f0c86a; --shadow:0 4px 14px rgba(80,105,80,.22);
+
+  .pixel { font-family:'Klee One',cursive; letter-spacing:0; font-weight:600; }
+  .panel { border-radius:16px; border-width:3px; box-shadow:inset 0 0 0 2px var(--wood-l), var(--shadow); }
+  .card, .cond { border-radius:14px; }
+  .group-head { background:linear-gradient(#6f8f8a,#5f7f6a); }
+
+  header.sign { background:linear-gradient(#8fc7dd,#7aa868); border-color:#436068; border-radius:20px; }
+}
+[data-theme="ghibli"] body {
+  background:
+    radial-gradient(circle at 78% 16%, rgba(255,255,255,.75) 0 46px, transparent 62px),
+    radial-gradient(circle at 70% 20%, rgba(255,255,255,.7) 0 34px, transparent 48px),
+    radial-gradient(circle at 20% 78%, rgba(255,255,255,.5) 0 40px, transparent 66px),
+    linear-gradient(#accfe6 0%, #c3ddde 32%, #d7e8cf 58%, #b6d691 100%);
+  background-attachment:fixed;
+}
+
+/* ===== Lego — bright plastic, molded studs, chunky type ===== */
+[data-theme="lego"] {
+  --wheat:#ffd23f; --wheat-2:#ffc61a; --wood-d:#1b1b1b; --wood:#c01c17; --wood-l:#ffe488;
+  --soil:#0055bf; --soil-d:#00337a; --leaf:#2a8f3c; --leaf-d:#1a5f27; --mint:#8ad98f;
+  --sky:#31a6dd; --sky-d:#0072b0; --ink:#1b1b1b; --ink-soft:#6a5a2a; --pink:#e6567a;
+  --clay:#d01012; --gold:#ffcf00; --shadow:0 4px 0 rgba(0,0,0,.45);
+
+  .pixel { font-family:'Fredoka',sans-serif; font-weight:700; letter-spacing:.3px; }
+  .panel {
+    border-radius:12px; border-width:4px;
+    background-image:radial-gradient(circle at 16px 16px, rgba(255,255,255,.4) 6px, rgba(0,0,0,.05) 7px, transparent 8px);
+    background-size:40px 40px;
+  }
+  .card { border-radius:8px; }
+  button { border-radius:6px; }
+  .group-head { background:linear-gradient(#0060cf,#0055bf); border-color:#00337a; }
+
+  header.sign { background:linear-gradient(#e11b17,#c01c17); border-color:#1b1b1b; }
+}
+[data-theme="lego"] body {
+  font-family:'Fredoka',sans-serif; font-weight:500;
+  background:radial-gradient(circle at 14px 10px, rgba(0,0,0,.12) 5px, transparent 6px) 0 0/30px 30px, #37a832;
+}
+
+/* Theme selector control */
+.theme-sel {
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; padding:6px 8px; border-radius:8px;
+  border:2px solid var(--soil-d); background:var(--wheat); color:var(--ink); cursor:pointer; margin-left:10px;
+}

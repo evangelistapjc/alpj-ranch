@@ -1,0 +1,99 @@
+{
+  "title": "Planter's Almanac",
+  "subtitle": "Your starter kit, grow-light picks, watering how-tos & water guide — all editable in almanac.json.",
+  "sections": [
+    {
+      "id": "playbook", "icon": "🌱", "title": "Beginner Playbook",
+      "intro": "The handful of habits that prevent most plant deaths — especially in a cool, low-light home.",
+      "groups": [{ "items": [
+        { "name": "Water the plant, not the calendar", "detail": "Finger-check 2\" down; only water if dry. Overwatering is the #1 killer here." },
+        { "name": "Drainage holes, always", "detail": "And empty the saucer after watering." },
+        { "name": "Quarantine newcomers ~2 weeks", "detail": "Watch for hitchhiking pests before mixing them in." },
+        { "name": "Settle before repotting", "detail": "Let a new plant adjust 1–2 weeks; don't repot day one." },
+        { "name": "Rotate + wipe leaves", "detail": "Even growth, and dust-free leaves use what little light you have." },
+        { "name": "Read the leaves", "detail": "Yellow = usually overwatering; crispy tips = under-water / dry air; leggy = more light." },
+        { "name": "Skip feeding props & winter", "detail": "No fertilizer on unrooted cuttings or during dormancy." }
+      ]}]
+    },
+    {
+      "id": "soil", "icon": "🪴", "title": "Soil & Amendments",
+      "intro": "Keep these on hand; you'll combine them three ways.",
+      "groups": [
+        { "heading": "Keep on hand", "items": [
+          { "name": "Potting mix", "detail": "Peat/coir base. Coco coir is the greener peat alternative." },
+          { "name": "Perlite", "detail": "The #1 amendment — aeration + drainage." },
+          { "name": "Orchid bark", "detail": "Chunky aroid-mix ingredient." },
+          { "name": "Pumice", "detail": "Heavier aeration that won't float; ideal for gritty succulent mixes." },
+          { "name": "Horticultural charcoal", "detail": "Keeps soil & water-props fresh." },
+          { "name": "Worm castings", "detail": "Gentle organic nutrients." }
+        ]},
+        { "heading": "Your 3 recipes", "items": [
+          { "name": "Aroids — Monstera, Snow Queen, Brasil", "detail": "potting mix + perlite + bark" },
+          { "name": "Semi-succulents — String of Hearts, Hoya", "detail": "gritty: 50–70% pumice / perlite / coarse sand" },
+          { "name": "Everyday — Pilea, Tradescantia, Money Tree", "detail": "potting mix + extra perlite" }
+        ]}
+      ]
+    },
+    {
+      "id": "tools", "icon": "🧰", "title": "Tools",
+      "intro": "A small kit covers everything you own.",
+      "groups": [{ "items": [
+        { "name": "Sharp, clean snips", "detail": "Propagation + pruning." },
+        { "name": "Narrow-spout watering can + a mister" },
+        { "name": "Chopstick / skewer", "detail": "Aerate soil, test moisture, stake cuttings." },
+        { "name": "Microfiber cloth", "detail": "Wiping leaves genuinely matters in low light." },
+        { "name": "Hygrometer + pebble/humidity tray", "detail": "Track and nudge your 45–55% RH." },
+        { "name": "Pots with drainage + saucers" },
+        { "name": "Pest kit", "detail": "Rubbing alcohol + swabs, neem oil or insecticidal soap." },
+        { "name": "Rooting hormone (optional) + gloves", "detail": "Gloves for Rubber & Tradescantia sap." }
+      ]}]
+    },
+    {
+      "id": "lights", "icon": "💡", "title": "Grow Lights",
+      "intro": "Full-spectrum white, 4000–6500K (skip the 'blurple' ones), 12–14 hrs/day on a timer, ~10–14\" above foliage. Aimed at your String of Hearts & Hoya.",
+      "groups": [{ "heading": "Picks (cheap → nice)", "items": [
+        { "name": "GooingTop clip (~$25) — top pick", "detail": "Dual gooseneck clips to a sill; 6000K full-spectrum, 5-level dimmer, 4/8/12h timer, runs cool. Ideal for 1–3 plants." },
+        { "name": "SANSI 36W bulb (E26)", "detail": "Drop into a lamp you already own; ceramic heat-dissipation keeps it cool." },
+        { "name": "Barrina T5 strips (~$25–40)", "detail": "For a future shelf; full-spectrum ~5000K, linkable, but mount 3–12\" close." },
+        { "name": "Soltech Aspect (~$150)", "detail": "Design-forward pendant that fits a Japandi space; no built-in timer." }
+      ]}],
+      "note": "Your String of Hearts wants 4–6 hrs of bright indirect light daily — more than the bay window reliably gives, which is why a light earns its keep.",
+      "sources": [
+        { "label": "The Plant Manual", "url": "https://www.theplantmanual.com/string-of-hearts-light-requirements/" },
+        { "label": "Blooming Expert", "url": "https://www.bloomingexpert.com/tips/best-grow-light-succulents/" },
+        { "label": "Plant Care Club", "url": "https://plantcareclub.com/blog/best-grow-lights-for-indoor-plants" }
+      ]
+    },
+    {
+      "id": "bottomwater", "icon": "🚿", "title": "Bottom Watering",
+      "intro": "Works for all your soil-potted plants — deeper roots, dry foliage, less rot.",
+      "groups": [{ "heading": "How", "items": [
+        { "name": "Soak", "detail": "Sit the pot in 1–2\" of water for 10–20 min until the topsoil feels damp." },
+        { "name": "Drain fully", "detail": "Lift and let it drip out — never leave it sitting." },
+        { "name": "Semi-succulents", "detail": "Keep the String of Hearts / Hoya soak brief." }
+      ]}],
+      "note": "Bottom watering doesn't flush salts — top-water every ~4th–6th time to rinse mineral buildup. N/A for cuttings still rooting in water (Brasil, Hoya, Rubber)."
+    },
+    {
+      "id": "water", "icon": "💧", "title": "Water Quality",
+      "intro": "Your plants are the tap-tolerant kind, so you likely don't need distilled. Upgrade only if you see crispy tips or white crust on terracotta.",
+      "groups": [
+        { "heading": "Options", "items": [
+          { "name": "Carbon filter (Brita/faucet) — cheapest", "detail": "Removes chlorine; note that letting tap sit out only offgasses chlorine, not chloramine or minerals." },
+          { "name": "Countertop distiller (~$60–90)", "detail": "Very pure, but slow (a gallon at a time) and uses electricity." },
+          { "name": "Countertop / under-sink RO", "detail": "Scales better; can remineralize; wastes ~1/3 to drain." }
+        ]},
+        { "heading": "Two rules", "items": [
+          { "name": "Remineralize distilled/RO", "detail": "It's mineral-free — add a Cal-Mag or a balanced feed." },
+          { "name": "Never use softened water", "detail": "Its sodium builds up in soil and blocks water uptake." }
+        ]}
+      ],
+      "note": "Greenest + cheapest for ~10 tap-tolerant plants: a carbon filter or collected rainwater, saving fancier water for any plant that shows mineral stress. Want zero variables? A countertop distiller + Cal-Mag is the least-hassle.",
+      "sources": [
+        { "label": "Fresh Water Systems", "url": "https://www.freshwatersystems.com/blogs/blog/best-water-for-plants-filtered-vs-distilled-vs-ro" },
+        { "label": "Aquasana", "url": "https://www.aquasana.com/info/benefits-of-using-filtered-water-on-plants-pd.html" },
+        { "label": "Crystal Quest", "url": "https://crystalquest.com/blogs/water/distilled-water-vs-reverse-osmosis" }
+      ]
+    }
+  ]
+}

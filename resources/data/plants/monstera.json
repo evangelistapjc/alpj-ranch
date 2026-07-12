@@ -1,0 +1,49 @@
+{
+  "id": "MON",
+  "name": "Monstera",
+  "botanical": "Monstera deliciosa · large",
+  "sprite": "🌿",
+  "location": "living",
+  "zone": "medium",
+  "stage": "propReady",
+  "difficulty": "moderate",
+  "medium": "soil",
+  "currentStatus": "Chill — all good",
+  "growLight": false,
+  "waterDays": 12,
+  "waterBucket": "regular",
+  "headline": "Your big one — prop candidate in ~3 months. Loves bright indirect (would adore the bedroom).",
+  "water": "Water when top 1–2\" dry (~10–12 days when cool/low-light).",
+  "light": "Bright indirect for splits; the north bedroom bay would suit it better than the dim living room.",
+  "soil": "Chunky aroid mix — bark + perlite + potting soil.",
+  "temp": "65–85°F.",
+  "humidity": "Prefers moderate–high; tolerates average.",
+  "fertilizer": "Balanced, monthly spring–summer.",
+  "repot": "Every 1–2 yrs; add a moss pole for bigger leaves.",
+  "propagate": "~3 mo out: cut below a node with an aerial root; root in water/moss.",
+  "tips": [
+    "New leaves with no holes = wants more light.",
+    "ID your nodes before propagating.",
+    "A moss pole = bigger, split-ier leaves."
+  ],
+  "issues": [
+    {
+      "sign": "No splits",
+      "fix": "Brighter light + maturity."
+    },
+    {
+      "sign": "Yellow leaves",
+      "fix": "Usually overwatering."
+    },
+    {
+      "sign": "Brown crispy edges",
+      "fix": "Underwater / low humidity."
+    }
+  ],
+  "sources": [
+    {
+      "label": "The Spruce",
+      "url": "https://www.thespruce.com/monstera-plant-profile-5072671"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+// ---------------------------------------------------------------------------
+// Design tokens — the default "Stardew" palette. Themes override these vars.
+// ---------------------------------------------------------------------------
+:root {
+  --wheat:#f4e2b8;  --wheat-2:#e9d29a;  --wood-d:#6f4526;  --wood:#9a6335;  --wood-l:#c89b62;
+  --soil:#5c3f28;   --soil-d:#3f2c1c;   --leaf:#5f9a37;    --leaf-d:#3d6b26; --mint:#a8d08a;
+  --sky:#6fb7d4;    --sky-d:#3d7fa0;    --ink:#3a2a1a;     --ink-soft:#6b543c; --pink:#d98aa8;
+  --clay:#c85a3c;   --gold:#e8b23a;     --shadow:0 3px 0 rgba(63,44,28,.35);
+}

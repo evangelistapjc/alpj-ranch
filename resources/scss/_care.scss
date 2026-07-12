@@ -1,0 +1,72 @@
+// ---------------------------------------------------------------------------
+// Care view — Today board, the Grove, plant cards.
+// ---------------------------------------------------------------------------
+.board { padding:14px 16px 16px; margin-bottom:16px; }
+.board h2, .grove h2, .mapwrap h2 {
+  font-size:15px; margin:0 0 4px; color:var(--wood-d); display:flex; align-items:center; gap:8px;
+}
+.board .sub { font-size:12px; color:var(--ink-soft); margin:0 0 12px; }
+
+.tasks { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px; }
+.task {
+  display:flex; gap:10px; align-items:center; padding:9px 11px; background:#fff8e6; border:2px solid var(--wood); border-radius:8px;
+  &.dry { border-color:var(--clay); background:#fdeee7; }
+  .t-emoji { font-size:22px; flex:none; }
+  .t-main { flex:1; min-width:0; }
+  .t-name { font-weight:800; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .t-meta { font-size:11px; color:var(--ink-soft); }
+}
+.all-good { padding:14px; text-align:center; color:var(--leaf-d); font-weight:700; }
+
+.grove { padding:14px 16px 20px; }
+.toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0 16px; }
+.seg {
+  display:inline-flex; background:var(--wheat-2); border:3px solid var(--wood-d); border-radius:9px;
+  overflow:hidden; box-shadow:inset 0 0 0 2px var(--wood-l); flex-wrap:wrap;
+  button {
+    background:transparent; color:var(--wood-d); border:none; border-radius:0; box-shadow:none; padding:7px 11px; font-size:12px;
+    &.on { background:var(--wood-d); color:#fff5df; }
+    &:active { transform:none; }
+  }
+}
+.group { margin-bottom:20px; }
+.group-head {
+  display:flex; align-items:center; gap:10px; margin:0 0 10px; padding:7px 12px;
+  background:var(--soil); color:#ffedcf; border-radius:8px; border:3px solid var(--soil-d); box-shadow:inset 0 0 0 2px var(--wood-l);
+  .g-emoji { font-size:20px; }
+  .g-title { font-weight:800; font-size:14px; }
+  .g-note { font-size:11px; opacity:.85; margin-left:auto; text-align:right; max-width:52%; }
+}
+.plot {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; padding:14px; border-radius:10px;
+  background:repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 2px, transparent 2px 46px), linear-gradient(var(--soil),#4a3220);
+  border:3px solid var(--soil-d);
+}
+
+.card {
+  background:var(--wheat); border:3px solid var(--wood-d); border-radius:9px;
+  box-shadow:inset 0 0 0 2px var(--wood-l), 0 3px 0 rgba(0,0,0,.25);
+  overflow:hidden; cursor:pointer; transition:transform .08s; display:flex; flex-direction:column;
+  &:hover { transform:translateY(-3px); }
+  .c-top { display:flex; gap:10px; align-items:center; padding:11px 12px 9px;
+    background:linear-gradient(#fbeecb,#f2ddac); border-bottom:2px dashed var(--wood); }
+  .c-sprite { font-size:30px; line-height:1; }
+  .c-name { font-weight:800; font-size:13.5px; line-height:1.1; }
+  .c-bot { font-size:10px; font-style:italic; color:var(--ink-soft); }
+  .c-id { margin-left:auto; font-size:10px; color:#fff; background:var(--wood-d); padding:2px 6px; border-radius:5px; }
+  .c-body { padding:10px 12px 12px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .c-water-row { margin-top:auto; display:flex; align-items:center; gap:8px; padding-top:8px; border-top:2px dashed var(--wood); }
+  .c-next { font-size:11px; color:var(--ink-soft); flex:1; b { color:var(--ink); } &.due { color:var(--clay); } }
+}
+.chips { display:flex; flex-wrap:wrap; gap:5px; }
+.chip {
+  font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; border:1.5px solid; display:inline-flex; align-items:center; gap:3px;
+  &.light { background:#fff6d9; border-color:var(--gold); color:#8a6410; }
+  &.water { background:#e4f3f9; border-color:var(--sky-d); color:#255d76; }
+  &.stage { background:#eaf5e0; border-color:var(--leaf-d); color:#39631f; }
+  &.grow  { background:#f3ecff; border-color:#8a6bd0; color:#5a3fa0; }
+}
+.c-status {
+  font-size:11px; background:#fff8e6; border:1.5px solid var(--wood); border-radius:6px; padding:5px 7px; color:var(--ink);
+  &.water { background:#e9f5fb; border-color:var(--sky-d); }
+}

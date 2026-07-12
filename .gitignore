@@ -1,3 +1,14 @@
-alpj-ranch-standalone.html
-build_data.py
-build_standalone.py
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Node (only used for the sass compiler in CI/local)
+node_modules/
+npm-debug.log*
+
+# Sass
+.sass-cache/
+*.css.map

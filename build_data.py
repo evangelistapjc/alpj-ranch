@@ -4,7 +4,7 @@ Edit this file (or the JSON directly) to add/adjust plants."""
 import json, os
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-PDIR = os.path.join(BASE, "data", "plants")
+PDIR = os.path.join(BASE, "resources", "data", "plants")
 os.makedirs(PDIR, exist_ok=True)
 
 HOME = {
@@ -269,11 +269,12 @@ for p in P:
         json.dump(p, f, indent=2, ensure_ascii=False)
     files.append(f"plants/{fn}")
 
-with open(os.path.join(BASE, "data", "home.json"), "w") as f:
+with open(os.path.join(BASE, "resources", "data", "home.json"), "w") as f:
     json.dump(HOME, f, indent=2, ensure_ascii=False)
 
-with open(os.path.join(BASE, "data", "index.json"), "w") as f:
-    json.dump({"home": "home.json", "plants": files, "count": len(files)}, f, indent=2)
+with open(os.path.join(BASE, "resources", "data", "index.json"), "w") as f:
+    json.dump({"home": "home.json", "plants": files, "almanac": "almanac.json", "count": len(files)}, f, indent=2)
 
-print(f"Wrote {len(files)} plant files + home.json + index.json")
+print(f"Wrote {len(files)} plant files + home.json + index.json into resources/data/")
+print("(almanac.json is hand-authored content — referenced by index.json, not regenerated here)")
 print("Plants:", ", ".join(p["id"] for p in P))

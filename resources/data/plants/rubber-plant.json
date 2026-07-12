@@ -1,0 +1,49 @@
+{
+  "id": "RUB",
+  "name": "Rubber Plant",
+  "botanical": "Ficus elastica (fresh cutting)",
+  "sprite": "🌳",
+  "location": "kitchen",
+  "zone": "medium",
+  "stage": "establishing",
+  "difficulty": "moderate",
+  "medium": "water",
+  "currentStatus": "Rooting in water — refresh ~weekly, keep it warm",
+  "growLight": false,
+  "waterDays": 12,
+  "waterBucket": "regular",
+  "headline": "Freshly propagated — hates cold drafts, so mind the first floor.",
+  "water": "In water now: refresh every ~5–7 days. Once potted: top 1–2\" dry (~10–12 days).",
+  "light": "Bright indirect is best; the kitchen's light suits it. Low light = slow & leggy.",
+  "soil": "When potting: well-draining potting mix.",
+  "temp": "60–80°F. Very sensitive to cold drafts — it drops leaves in protest.",
+  "humidity": "Average–moderate; a bit more helps roots.",
+  "fertilizer": "Skip while rooting; balanced monthly once potted.",
+  "repot": "Pot up once rooted; then every 1–2 yrs.",
+  "propagate": "Already done — rooting in water.",
+  "tips": [
+    "Keep away from cold windowsills & door drafts.",
+    "Wipe the big leaves — dust magnets that need all the light.",
+    "Milky sap is irritating — wash hands after pruning."
+  ],
+  "issues": [
+    {
+      "sign": "Leaf drop",
+      "fix": "Cold draft / temp swing."
+    },
+    {
+      "sign": "No roots",
+      "fix": "More warmth + light."
+    },
+    {
+      "sign": "Yellowing",
+      "fix": "Once potted, overwatering."
+    }
+  ],
+  "sources": [
+    {
+      "label": "The Spruce",
+      "url": "https://www.thespruce.com/grow-rubber-tree-plant-1902756"
+    }
+  ]
+}
