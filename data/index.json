@@ -1,0 +1,15 @@
+{
+  "home": "home.json",
+  "plants": [
+    "plants/string-of-hearts.json",
+    "plants/hoya-obovata.json",
+    "plants/pilea.json",
+    "plants/tradescantia.json",
+    "plants/monstera.json",
+    "plants/snow-queen-pothos.json",
+    "plants/philodendron-brasil.json",
+    "plants/rubber-plant.json",
+    "plants/money-tree.json"
+  ],
+  "count": 9
+}

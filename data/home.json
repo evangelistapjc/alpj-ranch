@@ -1,0 +1,137 @@
+{
+  "name": "ALPJ Ranch",
+  "location": {
+    "city": "San Jose, CA",
+    "lat": 37.3382,
+    "lon": -121.8863,
+    "climate": "Mediterranean / coastal"
+  },
+  "indoor": {
+    "tempF": [
+      65,
+      70
+    ],
+    "humidityPct": [
+      45,
+      55
+    ],
+    "note": "First-floor unit — runs cool, so soil dries slowly."
+  },
+  "lightSummary": "Bright-indirect home. 2 south windows (kitchen = the only direct sun), plus north bay windows in the bedroom (brightest by volume, but indirect).",
+  "grid": {
+    "cols": 12,
+    "rows": 10,
+    "tile": 40
+  },
+  "rooms": [
+    {
+      "id": "den",
+      "name": "Den",
+      "x": 0,
+      "y": 0,
+      "w": 5,
+      "h": 3,
+      "floor": "wood",
+      "light": 3,
+      "windows": [
+        {
+          "edge": "top",
+          "direct": false
+        }
+      ],
+      "note": "South window · steady moderate indirect light"
+    },
+    {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "x": 7,
+      "y": 0,
+      "w": 5,
+      "h": 4,
+      "floor": "tile",
+      "light": 3,
+      "windows": [
+        {
+          "edge": "top",
+          "direct": true
+        }
+      ],
+      "note": "South window · your ONLY spot with real direct sun"
+    },
+    {
+      "id": "bathroom",
+      "name": "Bath",
+      "x": 0,
+      "y": 3,
+      "w": 3,
+      "h": 2,
+      "floor": "tile",
+      "light": 0,
+      "windows": [],
+      "note": "No light · ideal future grow-light + humidity shelf"
+    },
+    {
+      "id": "closet",
+      "name": "Closet",
+      "x": 0,
+      "y": 5,
+      "w": 3,
+      "h": 2,
+      "floor": "wood",
+      "light": 0,
+      "windows": [],
+      "note": "No light"
+    },
+    {
+      "id": "bedroom",
+      "name": "Bedroom",
+      "x": 0,
+      "y": 7,
+      "w": 6,
+      "h": 3,
+      "floor": "carpet",
+      "light": 5,
+      "windows": [
+        {
+          "edge": "bottom",
+          "direct": false
+        },
+        {
+          "edge": "left",
+          "direct": false
+        }
+      ],
+      "note": "Bay windows · most light by volume, but bright INDIRECT (no direct sun)"
+    },
+    {
+      "id": "living",
+      "name": "Living Room",
+      "x": 6,
+      "y": 4,
+      "w": 6,
+      "h": 4,
+      "floor": "wood",
+      "light": 2,
+      "windows": [
+        {
+          "edge": "bottom",
+          "direct": false
+        }
+      ],
+      "note": "North · light comes only from the patio slider — hug the glass"
+    },
+    {
+      "id": "patio",
+      "name": "Patio",
+      "x": 6,
+      "y": 8,
+      "w": 6,
+      "h": 2,
+      "floor": "grass",
+      "light": 4,
+      "outdoor": true,
+      "windows": [],
+      "note": "Outdoor · sliding door above"
+    }
+  ]
+}

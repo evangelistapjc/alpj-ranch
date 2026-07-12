@@ -1,0 +1,49 @@
+{
+  "id": "BRA",
+  "name": "Philodendron Brasil",
+  "botanical": "Philodendron hederaceum 'Brasil' (fresh cutting)",
+  "sprite": "🍃",
+  "location": "den",
+  "zone": "medium",
+  "stage": "establishing",
+  "difficulty": "easy",
+  "medium": "water",
+  "currentStatus": "Rooting in water — refresh ~weekly",
+  "growLight": false,
+  "waterDays": 10,
+  "waterBucket": "regular",
+  "headline": "Freshly propagated & your most low-light-tolerant plant.",
+  "water": "In water now: refresh every ~5–7 days. Once potted: top 1–2\" dry (~10 days).",
+  "light": "Tolerates low–medium, but the lime stripe needs medium–bright to stay vivid.",
+  "soil": "When potting: aroid mix — potting soil + perlite + bark.",
+  "temp": "65–80°F.",
+  "humidity": "Average is fine.",
+  "fertilizer": "Skip while rooting; balanced monthly once potted.",
+  "repot": "Pot up once roots ~1–2\"; then when rootbound ~1–2 yrs.",
+  "propagate": "Already done — node cuttings root readily.",
+  "tips": [
+    "Best bet for a dim corner once established.",
+    "Pinch/trim to keep it full.",
+    "Keep sap away from pets — mild irritant."
+  ],
+  "issues": [
+    {
+      "sign": "Variegation fading",
+      "fix": "More light."
+    },
+    {
+      "sign": "Yellow leaves",
+      "fix": "Overwatering once potted."
+    },
+    {
+      "sign": "Slimy stem in water",
+      "fix": "Change water more often."
+    }
+  ],
+  "sources": [
+    {
+      "label": "The Spruce",
+      "url": "https://www.thespruce.com/grow-philodendron-brasil-5077387"
+    }
+  ]
+}

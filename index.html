@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ALPJ Ranch — Plant Care</title>
+<meta name="theme-color" content="#6f4526" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="ALPJ Ranch" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wheat:#f4e2b8; --wheat-2:#e9d29a; --wood-d:#6f4526; --wood:#9a6335; --wood-l:#c89b62;
+  --soil:#5c3f28; --soil-d:#3f2c1c; --leaf:#5f9a37; --leaf-d:#3d6b26; --mint:#a8d08a;
+  --sky:#6fb7d4; --sky-d:#3d7fa0; --ink:#3a2a1a; --ink-soft:#6b543c; --pink:#d98aa8;
+  --clay:#c85a3c; --gold:#e8b23a; --shadow:0 3px 0 rgba(63,44,28,.35);
+}
+*{box-sizing:border-box}
+body{margin:0; font-family:'Nunito',system-ui,sans-serif; color:var(--ink); line-height:1.5;
+  background:repeating-linear-gradient(45deg, rgba(0,0,0,.03) 0 12px, transparent 12px 24px),
+    radial-gradient(circle at 20% 10%, #6c9a44 0, transparent 40%),
+    radial-gradient(circle at 90% 80%, #4d7a2e 0, transparent 45%), #5c8535;
+  min-height:100vh; min-height:100dvh; padding-bottom:env(safe-area-inset-bottom);}
+.pixel{font-family:'Pixelify Sans',monospace; letter-spacing:.5px}
+.panel{background:var(--wheat); border:4px solid var(--wood-d); border-radius:10px;
+  box-shadow:inset 0 0 0 3px var(--wood-l), var(--shadow); position:relative;}
+.wrap{max-width:1180px; margin:0 auto; padding:16px 14px 70px; padding-top:calc(16px + env(safe-area-inset-top));}
+
+header.sign{margin-bottom:14px; padding:15px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:linear-gradient(#b0713d,#8a5730); border:4px solid var(--soil-d); border-radius:12px;
+  box-shadow:inset 0 0 0 3px var(--wood-l), 0 5px 0 rgba(0,0,0,.3);}
+header.sign h1{margin:0; font-size:clamp(22px,5vw,34px); color:#fff5df; text-shadow:2px 2px 0 var(--soil-d)}
+header.sign p{margin:2px 0 0; color:#ffe9c4; font-size:12.5px}
+.sign .plot-count{margin-left:auto; text-align:right; color:#fff5df}
+.sign .plot-count b{font-size:26px; display:block; line-height:1}
+.sign .plot-count span{font-size:11px; opacity:.85}
+
+.conditions{display:flex; gap:10px; flex-wrap:wrap; margin:0 0 14px}
+.cond{flex:1 1 150px; min-width:140px; padding:10px 12px; display:flex; gap:10px; align-items:center;
+  background:var(--wheat); border:3px solid var(--wood-d); border-radius:9px; box-shadow:inset 0 0 0 2px var(--wood-l)}
+.cond .big{font-size:26px; line-height:1; flex:none}
+.cond .lbl{font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--ink-soft)}
+.cond .val{font-weight:800; font-size:13.5px; line-height:1.2}
+.cond .sub{font-size:11px; color:var(--ink-soft)}
+
+.viewnav{display:flex; gap:8px; margin:0 0 14px}
+.viewnav button{flex:1; background:var(--wheat); color:var(--wood-d); border:3px solid var(--wood-d);
+  border-radius:9px; padding:11px; font-size:14px; font-weight:800; cursor:pointer;
+  box-shadow:inset 0 0 0 2px var(--wood-l), 0 3px 0 rgba(0,0,0,.25)}
+.viewnav button.on{background:var(--wood-d); color:#fff5df}
+.viewnav button:active{transform:translateY(2px)}
+
+button{font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; background:var(--leaf); color:#fff;
+  border:2px solid var(--leaf-d); border-radius:7px; padding:6px 10px; font-size:12px;
+  box-shadow:0 2px 0 var(--leaf-d); transition:transform .05s, filter .1s}
+button:hover{filter:brightness(1.06)} button:active{transform:translateY(2px); box-shadow:0 0 0 var(--leaf-d)}
+button.ghost{background:var(--wheat); color:var(--ink); border-color:var(--wood-d); box-shadow:0 2px 0 var(--wood-d)}
+button.ghost:active{box-shadow:0 0 0 var(--wood-d)}
+button.ghost.done{background:var(--leaf-d); color:#eefbe2; border-color:#2b4d1a; box-shadow:0 2px 0 #2b4d1a}
+button.tiny{padding:4px 8px; font-size:11px}
+button.sky{background:var(--sky); border-color:var(--sky-d); box-shadow:0 2px 0 var(--sky-d)}
+button.sky:active{box-shadow:0 0 0 var(--sky-d)}
+button.sky.watered{background:var(--sky-d); border-color:#255d76; box-shadow:0 2px 0 #255d76; color:#eafaff}
+button:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
+
+.board{padding:14px 16px 16px; margin-bottom:16px}
+.board h2, .grove h2, .mapwrap h2{font-size:15px; margin:0 0 4px; color:var(--wood-d); display:flex; align-items:center; gap:8px}
+.board .sub{font-size:12px; color:var(--ink-soft); margin:0 0 12px}
+.tasks{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px}
+.task{display:flex; gap:10px; align-items:center; padding:9px 11px; background:#fff8e6; border:2px solid var(--wood); border-radius:8px}
+.task.dry{border-color:var(--clay); background:#fdeee7}
+.task .t-emoji{font-size:22px; flex:none}
+.task .t-main{flex:1; min-width:0}
+.task .t-name{font-weight:800; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.task .t-meta{font-size:11px; color:var(--ink-soft)}
+.all-good{padding:14px; text-align:center; color:var(--leaf-d); font-weight:700}
+
+.grove{padding:14px 16px 20px}
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0 16px}
+.seg{display:inline-flex; background:var(--wheat-2); border:3px solid var(--wood-d); border-radius:9px; overflow:hidden; box-shadow:inset 0 0 0 2px var(--wood-l); flex-wrap:wrap}
+.seg button{background:transparent; color:var(--wood-d); border:none; border-radius:0; box-shadow:none; padding:7px 11px; font-size:12px}
+.seg button.on{background:var(--wood-d); color:#fff5df}
+.seg button:active{transform:none}
+.group{margin-bottom:20px}
+.group-head{display:flex; align-items:center; gap:10px; margin:0 0 10px; padding:7px 12px; background:var(--soil); color:#ffedcf; border-radius:8px; border:3px solid var(--soil-d); box-shadow:inset 0 0 0 2px var(--wood-l)}
+.group-head .g-emoji{font-size:20px}
+.group-head .g-title{font-weight:800; font-size:14px}
+.group-head .g-note{font-size:11px; opacity:.85; margin-left:auto; text-align:right; max-width:52%}
+.plot{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; padding:14px; border-radius:10px;
+  background:repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 2px, transparent 2px 46px), linear-gradient(var(--soil),#4a3220); border:3px solid var(--soil-d)}
+.card{background:var(--wheat); border:3px solid var(--wood-d); border-radius:9px; box-shadow:inset 0 0 0 2px var(--wood-l), 0 3px 0 rgba(0,0,0,.25);
+  overflow:hidden; cursor:pointer; transition:transform .08s; display:flex; flex-direction:column}
+.card:hover{transform:translateY(-3px)}
+.card .c-top{display:flex; gap:10px; align-items:center; padding:11px 12px 9px; background:linear-gradient(#fbeecb,#f2ddac); border-bottom:2px dashed var(--wood)}
+.card .c-sprite{font-size:30px; line-height:1}
+.card .c-name{font-weight:800; font-size:13.5px; line-height:1.1}
+.card .c-bot{font-size:10px; font-style:italic; color:var(--ink-soft)}
+.card .c-id{margin-left:auto; font-size:10px; color:#fff; background:var(--wood-d); padding:2px 6px; border-radius:5px}
+.card .c-body{padding:10px 12px 12px; display:flex; flex-direction:column; gap:8px; flex:1}
+.chips{display:flex; flex-wrap:wrap; gap:5px}
+.chip{font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; border:1.5px solid; display:inline-flex; align-items:center; gap:3px}
+.chip.light{background:#fff6d9; border-color:var(--gold); color:#8a6410}
+.chip.water{background:#e4f3f9; border-color:var(--sky-d); color:#255d76}
+.chip.stage{background:#eaf5e0; border-color:var(--leaf-d); color:#39631f}
+.chip.grow{background:#f3ecff; border-color:#8a6bd0; color:#5a3fa0}
+.c-status{font-size:11px; background:#fff8e6; border:1.5px solid var(--wood); border-radius:6px; padding:5px 7px; color:var(--ink)}
+.c-status.water{background:#e9f5fb; border-color:var(--sky-d)}
+.c-water-row{margin-top:auto; display:flex; align-items:center; gap:8px; padding-top:8px; border-top:2px dashed var(--wood)}
+.c-next{font-size:11px; color:var(--ink-soft); flex:1}
+.c-next b{color:var(--ink)} .c-next.due{color:var(--clay)}
+
+/* ---- home map ---- */
+.mapwrap{padding:14px 16px 18px}
+.mapwrap .sub{font-size:12px; color:var(--ink-soft); margin:0 0 12px}
+.mapframe{background:linear-gradient(#2a1e12,#1c140b); border:4px solid #140e07; border-radius:12px; padding:10px; max-width:720px; margin:0 auto; box-shadow:inset 0 0 24px rgba(0,0,0,.5)}
+.mapframe svg{width:100%; height:auto; display:block}
+.maplegend{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin-top:14px; font-size:11px; color:var(--ink-soft)}
+.maplegend b{color:var(--ink)}
+.plant-g{cursor:pointer}
+.plant-g:hover .pot-emoji{font-size:24px}
+
+.export{display:flex; gap:12px; flex-wrap:wrap; align-items:center; padding:16px 18px; margin-top:8px}
+.export .txt{flex:1; min-width:220px}
+.export h2{margin:0 0 3px; font-size:15px; color:var(--wood-d)}
+.export p{margin:0; font-size:12px; color:var(--ink-soft)}
+.foot{text-align:center; color:#eafbd8; font-size:11px; margin-top:20px; opacity:.92}
+.foot a{color:#fff}
+
+.scrim{position:fixed; inset:0; background:rgba(40,26,14,.6); display:none; z-index:40; padding:16px; overflow:auto}
+.scrim.open{display:flex; align-items:flex-start; justify-content:center}
+.modal{width:min(720px,100%); margin:auto; overflow:hidden}
+.m-top{display:flex; gap:14px; align-items:center; padding:15px 16px; background:linear-gradient(#b0713d,#8a5730); border-bottom:4px solid var(--soil-d)}
+.m-top .m-sprite{font-size:42px}
+.m-top h3{margin:0; color:#fff5df; font-size:19px; text-shadow:1px 1px 0 var(--soil-d)}
+.m-top .m-bot{color:#ffe9c4; font-style:italic; font-size:12px}
+.m-close{margin-left:auto; background:var(--clay); border-color:#8f3a22; box-shadow:0 2px 0 #8f3a22}
+.m-tabs{display:flex; gap:4px; flex-wrap:wrap; padding:10px 12px 0; background:var(--wheat-2)}
+.m-tabs button{background:var(--wheat); color:var(--wood-d); border:2px solid var(--wood-d); border-bottom:none; box-shadow:none; border-radius:7px 7px 0 0; padding:6px 10px; font-size:11.5px}
+.m-tabs button.on{background:var(--wheat); color:var(--ink); position:relative; top:2px; border-bottom:3px solid var(--wheat)}
+.m-body{padding:16px 18px 22px; background:var(--wheat); max-height:62vh; overflow:auto}
+.pane h4{margin:0 0 6px; font-size:13px; color:var(--wood-d); text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:7px}
+.pane p{margin:0 0 12px; font-size:14px}
+.pane ul{margin:0 0 12px; padding-left:20px} .pane li{font-size:14px; margin-bottom:5px}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:14px; margin-bottom:12px}
+.kv dt{font-weight:800; color:var(--ink-soft)} .kv dd{margin:0}
+.note-box{background:#fff8e6; border:2px solid var(--wood); border-radius:8px; padding:10px 12px; font-size:13px; margin:8px 0}
+.note-box.warn{background:#fdeee7; border-color:var(--clay)}
+.note-box.water{background:#e9f5fb; border-color:var(--sky-d)}
+.actions-row{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 14px}
+.sources{font-size:11px; color:var(--ink-soft); border-top:2px dashed var(--wood); padding-top:8px; margin-top:6px}
+.sources a{color:var(--sky-d)}
+.log-item{background:#fff8e6; border:2px solid var(--wood); border-radius:7px; padding:8px 10px; margin-bottom:7px; font-size:13px; display:flex; gap:8px; align-items:flex-start}
+.log-item .date{font-size:11px; color:var(--ink-soft); flex:none; font-weight:800}
+.log-empty{font-size:13px; color:var(--ink-soft); font-style:italic; margin-bottom:10px}
+.log-form{display:flex; gap:8px; margin-top:8px}
+.log-form input{flex:1; font-family:'Nunito'; font-size:13px; padding:7px 9px; border:2px solid var(--wood-d); border-radius:7px; background:#fff}
+
+.toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(30px); opacity:0; background:var(--soil-d); color:#fff5df; padding:10px 18px; border-radius:9px; font-weight:800; font-size:13px; border:2px solid var(--wood-l); z-index:60; transition:.25s; pointer-events:none; max-width:90vw; text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0); opacity:1}
+.loading{padding:40px; text-align:center; color:#fff5df; font-family:'Pixelify Sans'}
+.errbox{background:#fdeee7; border:3px solid var(--clay); border-radius:10px; padding:16px; margin:10px 0; font-size:13px}
+.errbox code{background:#fff; padding:2px 5px; border-radius:4px; font-size:12px}
+
+@media (max-width:520px){ .m-body{max-height:70vh} .sign .plot-count{margin-left:0} .group-head .g-note{display:none} }
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading pixel">🌱 Loading ALPJ Ranch…</div>
+</div>
+
+<div class="scrim" id="scrim" onclick="if(event.target===this)closeModal()">
+  <div class="modal panel" role="dialog" aria-modal="true" aria-labelledby="mName">
+    <div class="m-top"><span class="m-sprite" id="mSprite">🌱</span>
+      <div><h3 id="mName" class="pixel">Plant</h3><div class="m-bot" id="mBot"></div></div>
+      <button class="m-close" onclick="closeModal()">✕</button></div>
+    <div class="m-tabs" id="mTabs"></div>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ storage shim (localStorage → memory fallback) ============ */
+const Store=(()=>{let mem={},ok=false;try{const k='__alpj__';localStorage.setItem(k,'1');localStorage.removeItem(k);ok=true;}catch(e){}
+  return{get(k){try{return ok?JSON.parse(localStorage.getItem(k)||'null'):(mem[k]??null)}catch(e){return mem[k]??null}},
+         set(k,v){try{ok?localStorage.setItem(k,JSON.stringify(v)):(mem[k]=v)}catch(e){mem[k]=v}},persists:ok};})();
+
+/* ============ data loading (embedded OR fetched JSON) ============ */
+let HOME=null, PLANTS=[], ROOM_BY_ID={};
+async function loadData(){
+  if(window.EMBEDDED_DATA) return window.EMBEDDED_DATA;         // standalone build
+  const base='data/';
+  const idx=await (await fetch(base+'index.json')).json();
+  const home=await (await fetch(base+idx.home)).json();
+  const plants=await Promise.all(idx.plants.map(p=>fetch(base+p).then(r=>r.json())));
+  return {home, plants};
+}
+
+/* ============ weather (Open-Meteo, free, no key) ============ */
+const WMO={0:['☀️','Clear'],1:['🌤️','Mostly clear'],2:['⛅','Partly cloudy'],3:['☁️','Cloudy'],
+  45:['🌫️','Fog'],48:['🌫️','Fog'],51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Drizzle'],
+  61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],71:['🌨️','Snow'],80:['🌦️','Showers'],
+  81:['🌧️','Showers'],82:['⛈️','Heavy showers'],95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Thunderstorm']};
+async function loadWeather(){
+  if(!HOME?.location) return;
+  const {lat,lon}=HOME.location;
+  const tile=document.getElementById('wxTile'); if(!tile) return;
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`;
+    const w=await (await fetch(u)).json();
+    const c=w.current, t=Math.round(c.temperature_2m), rh=c.relative_humidity_2m, hi=Math.round(w.daily.temperature_2m_max[0]);
+    const [emo,txt]=WMO[c.weather_code]||['🌡️','—'];
+    let nudge = t>=85 ? 'Warm out — indoors dries a bit faster.' : t<=60 ? 'Cool — soil stays wet longer, ease off water.' : 'Mild — normal watering rhythm.';
+    tile.querySelector('.big').textContent=emo;
+    tile.querySelector('.val').textContent=`${t}°F · ${txt}`;
+    tile.querySelector('.sub').textContent=`${HOME.location.city.split(',')[0]} · ${rh}% RH · hi ${hi}° · ${nudge}`;
+  }catch(e){ tile.querySelector('.val').textContent='Weather offline'; tile.querySelector('.sub').textContent='Connect to load live conditions'; }
+}
+
+/* ============ state / dates ============ */
+function state(){return Store.get('alpj_state')||{}}
+function saveState(s){Store.set('alpj_state',s)}
+function ps(id){return state()[id]||{}}
+function setPs(id,patch){const s=state();s[id]={...(s[id]||{}),...patch};saveState(s)}
+const DAY=86400000;
+function today0(){const d=new Date();d.setHours(0,0,0,0);return d}
+function fmtDate(d){return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}
+function isSameDay(iso){if(!iso)return false;const d=new Date(iso),t=today0();return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate()}
+function interval(p){return p.medium==='water'?6:p.waterDays}
+function nextCheck(p){const b=ps(p.id).lastWatered?new Date(ps(p.id).lastWatered):today0();return new Date(b.getTime()+interval(p)*DAY)}
+function daysUntil(p){return Math.round((nextCheck(p)-today0())/DAY)}
+function actWord(p){return p.medium==='water'?'Refresh':'Water'}
+
+/* ============ labels ============ */
+const ZONE={bright:'Bright',medium:'Medium',low:'Low'};
+const STAGE={establishing:'Establishing',growing:'Growing',propReady:'Prop-ready'};
+
+/* ============ boot ============ */
+let currentGroup='light', currentView='care', openId=null, openTab='overview';
+(async function boot(){
+  try{
+    const data=await loadData();
+    HOME=data.home; PLANTS=data.plants;
+    ROOM_BY_ID={}; (HOME.rooms||[]).forEach(r=>ROOM_BY_ID[r.id]=r);
+    renderShell(); render(); loadWeather();
+    if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    }
+    if(!Store.persists) setTimeout(()=>toast('👀 Preview mode — install or download to save tracking'),700);
+  }catch(e){
+    document.getElementById('app').innerHTML=`<div class="panel" style="padding:20px">
+      <h2 class="pixel" style="color:var(--wood-d)">🌱 ALPJ Ranch</h2>
+      <div class="errbox"><b>Couldn't load the plant data files.</b><br><br>
+      This version reads separate JSON files, which browsers block when you open the file directly
+      (the <code>file://</code> security rule). Two easy fixes:<br><br>
+      <b>1 · Serve it locally</b> — in the project folder run:<br>
+      <code>python3 -m http.server</code><br>then open <code>http://localhost:8000</code>.<br><br>
+      <b>2 · Use the standalone file</b> — open <code>alpj-ranch-standalone.html</code> instead (data is baked in; works by double-click and on your phone).<br><br>
+      <b>3 · Host it</b> — push to GitHub Pages / Netlify for a phone-friendly link.</div>
+      <div style="font-size:12px;color:var(--ink-soft)">Technical: ${String(e).slice(0,120)}</div></div>`;
+  }
+})();
+
+/* ============ shell ============ */
+function renderShell(){
+  const app=document.getElementById('app');
+  app.innerHTML=`
+  <header class="sign">
+    <svg width="50" height="50" viewBox="0 0 16 16" aria-hidden="true">
+      <g fill="#3f6d2c"><rect x="7" y="9" width="2" height="5"/></g>
+      <g fill="#5f9a37"><rect x="4" y="8" width="3" height="2"/><rect x="3" y="9" width="2" height="2"/><rect x="9" y="8" width="3" height="2"/><rect x="11" y="9" width="2" height="2"/></g>
+      <g fill="#e8b23a"><rect x="6" y="2" width="4" height="4"/><rect x="5" y="3" width="6" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="7" y="6" width="2" height="1"/><rect x="2" y="3" width="2" height="1"/><rect x="12" y="3" width="2" height="1"/></g>
+    </svg>
+    <div><h1 class="pixel">${HOME.name}</h1><p>Plant care · ${HOME.location.city} · low-light, first-floor apartment</p></div>
+    <div class="plot-count"><b class="pixel">${PLANTS.length}</b><span>plants in the plot</span></div>
+  </header>
+
+  <div class="conditions">
+    <div class="cond" id="wxTile"><span class="big">🌡️</span><div><div class="lbl">Live weather</div><div class="val">Loading…</div><div class="sub">fetching…</div></div></div>
+    <div class="cond"><span class="big">💡</span><div><div class="lbl">Home light</div><div class="val">Bright-indirect</div><div class="sub">1 direct-sun sill (kitchen)</div></div></div>
+    <div class="cond"><span class="big">🏠</span><div><div class="lbl">Indoor temp</div><div class="val">Cool ~${HOME.indoor.tempF[0]}–${HOME.indoor.tempF[1]}°F</div><div class="sub">slow-drying soil</div></div></div>
+    <div class="cond"><span class="big">🌤️</span><div><div class="lbl">Brightest spot</div><div class="val">Bedroom bay</div><div class="sub">bright, but indirect</div></div></div>
+  </div>
+
+  <div class="viewnav">
+    <button id="navCare" class="on" onclick="switchView('care')">🌿 Care Dashboard</button>
+    <button id="navHome" onclick="switchView('home')">🗺️ Home Map</button>
+  </div>
+
+  <div id="careView">
+    <section class="board panel">
+      <h2 class="pixel"><span>📋</span> Today on the Ranch</h2>
+      <p class="sub">Cool + low light = slow-drying soil. These are <b>check-first</b> nudges — poke a finger 2" down; only water if dry.</p>
+      <div id="tasks" class="tasks"></div>
+    </section>
+    <section class="grove panel">
+      <h2 class="pixel"><span>🌿</span> The Grove</h2>
+      <div class="toolbar"><span style="font-size:12px;color:var(--ink-soft);font-weight:700">Organize by:</span>
+        <div class="seg" id="groupSeg">
+          <button data-g="light" class="on">☀️ Light</button>
+          <button data-g="water">💧 Water</button>
+          <button data-g="stage">🌱 Stage</button>
+          <button data-g="room">🏠 Room</button>
+          <button data-g="none">🔲 All</button>
+        </div></div>
+      <div id="grove"></div>
+    </section>
+    <section class="export panel">
+      <span style="font-size:34px">📅</span>
+      <div class="txt"><h2 class="pixel">Send to Google Calendar</h2>
+        <p>Downloads an <b>.ics</b> with recurring watering/feeding + prop reminders. In Google Calendar: Settings → Import &amp; export.</p></div>
+      <button class="sky" onclick="exportICS()">⬇️ Download .ics</button>
+    </section>
+  </div>
+
+  <section id="homeView" class="mapwrap panel" hidden>
+    <h2 class="pixel"><span>🗺️</span> Home Map</h2>
+    <p class="sub">Your apartment, drawn top-down. Glowing edges are windows; brighter floors = more light. Tap a plant to open its care card.</p>
+    <div class="mapframe" id="mapframe"></div>
+    <div class="maplegend" id="maplegend"></div>
+  </section>
+
+  <p class="foot">${HOME.name} 🌾 · care facts from horticulture guides (linked per plant) · live weather via Open-Meteo · tuned for ${HOME.location.city}</p>`;
+  document.getElementById('groupSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    currentGroup=b.dataset.g;document.querySelectorAll('#groupSeg button').forEach(x=>x.classList.toggle('on',x===b));renderGrove();});
+}
+
+/* ============ render care view ============ */
+function render(){renderTasks();renderGrove();}
+function renderTasks(){
+  const el=document.getElementById('tasks');
+  const due=PLANTS.map(p=>({p,d:daysUntil(p)})).filter(x=>x.d<=2).sort((a,b)=>a.d-b.d);
+  if(!due.length){el.innerHTML='<div class="all-good">🌾 Nothing thirsty today. The ranch is content.</div>';return;}
+  el.innerHTML=due.map(({p,d})=>{const dry=d<=0,over=d<0;
+    const meta=over?`Overdue ${Math.abs(d)}d`:d===0?'Check today':`In ${d}d`;
+    return `<div class="task ${dry?'dry':''}"><span class="t-emoji">${p.sprite}</span>
+      <div class="t-main"><div class="t-name">${p.name}</div><div class="t-meta">${p.medium==='water'?'🔄':'💧'} ${meta} · ${p.medium==='water'?'refresh water':'finger-check'}</div></div>
+      ${waterBtn(p.id,false)}</div>`;}).join('');
+}
+const GROUPINGS={
+  light:{order:['bright','medium','low'],of:p=>p.zone,meta:{
+    bright:{emoji:'☀️',title:'Bright — Bedroom bay',note:'Light-hungry & variegated'},
+    medium:{emoji:'🌤️',title:'Medium — Den / Kitchen / Living',note:'Tolerant of less light'},
+    low:{emoji:'🌑',title:'Low light',note:'Last resort only'}}},
+  water:{order:['sip','regular'],of:p=>p.waterBucket,meta:{
+    sip:{emoji:'🏜️',title:'Sip — dry-down crew',note:'Check every 2–3 wks'},
+    regular:{emoji:'💧',title:'Regular — weekly-ish',note:'Check every ~10–14 days'}}},
+  stage:{order:['establishing','growing','propReady'],of:p=>p.stage,meta:{
+    establishing:{emoji:'🌱',title:'Establishing — props & babies',note:'Gentle care, no fertilizer yet'},
+    growing:{emoji:'🌿',title:'Growing — established',note:'Normal rhythm'},
+    propReady:{emoji:'✂️',title:'Propagation-ready',note:'Coming up for cuttings'}}},
+  room:{order:[],of:p=>p.location,meta:{}},
+};
+function renderGrove(){
+  const grove=document.getElementById('grove');
+  if(currentGroup==='none'){grove.innerHTML=`<div class="plot">${PLANTS.map(cardHTML).join('')}</div>`;bindCards();return;}
+  const G=GROUPINGS[currentGroup];
+  let keys=G.order.length?G.order.slice():[...new Set(PLANTS.map(G.of))];
+  [...new Set(PLANTS.map(G.of))].forEach(k=>{if(!keys.includes(k))keys.push(k)});
+  let html='';
+  keys.forEach(k=>{const members=PLANTS.filter(p=>G.of(p)===k);if(!members.length)return;
+    let m=(G.meta&&G.meta[k]);
+    if(!m && currentGroup==='room'){const r=ROOM_BY_ID[k];m={emoji:'🏠',title:r?r.name:k,note:r?r.note:''};}
+    m=m||{emoji:'🏠',title:k,note:''};
+    html+=`<div class="group"><div class="group-head"><span class="g-emoji">${m.emoji}</span><span class="g-title">${m.title}</span>${m.note?`<span class="g-note">${m.note}</span>`:''}</div><div class="plot">${members.map(cardHTML).join('')}</div></div>`;});
+  grove.innerHTML=html;bindCards();
+}
+function cardHTML(p){
+  const d=daysUntil(p),due=d<=0;
+  const nextTxt=due?`${actWord(p)} now`:`${p.medium==='water'?'Refresh':'Check'} ${fmtDate(nextCheck(p))}`;
+  const st=ps(p.id).status||p.currentStatus;
+  return `<div class="card" tabindex="0" data-id="${p.id}" role="button">
+    <div class="c-top"><span class="c-sprite">${p.sprite}</span>
+      <div><div class="c-name">${p.name}</div><div class="c-bot">${p.botanical}</div></div>
+      <span class="c-id">${p.id}</span></div>
+    <div class="c-body">
+      <div class="chips">
+        <span class="chip light">☀️ ${ZONE[p.zone]}</span>
+        <span class="chip water">${p.medium==='water'?'🔄 water-prop':'💧 '+p.waterDays+'d'}</span>
+        <span class="chip stage">🌱 ${STAGE[p.stage]}</span>
+        ${p.growLight?'<span class="chip grow">⚡ grow light</span>':''}
+      </div>
+      ${st?`<div class="c-status ${p.medium==='water'?'water':''}">📍 ${st}</div>`:''}
+      <div class="c-water-row"><span class="c-next ${due?'due':''}">${p.medium==='water'?'🔄':'💧'} <b>${nextTxt}</b></span>${waterBtn(p.id,false)}</div>
+    </div></div>`;
+}
+function bindCards(){document.querySelectorAll('.card').forEach(c=>{c.addEventListener('click',()=>openModal(c.dataset.id));
+  c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(c.dataset.id);}});});}
+
+/* ============ water/fed buttons ============ */
+function isWateredToday(id){return isSameDay(ps(id).lastWatered)}
+function isFedToday(id){return isSameDay(ps(id).lastFed)}
+function toggleWatered(id,ev){if(ev)ev.stopPropagation();const s=ps(id),p=PLANTS.find(x=>x.id===id);
+  if(isSameDay(s.lastWatered)){setPs(id,{lastWatered:s.prevWatered||null,prevWatered:null});toast(`↩️ ${p.name} undone`);}
+  else{setPs(id,{prevWatered:s.lastWatered||null,lastWatered:today0().toISOString()});toast(`${p.medium==='water'?'🔄':'💧'} ${p.name} — next ${fmtDate(nextCheck(p))}`);}
+  render();if(openId===id)renderModalBody();}
+function waterBtn(id,big){const on=isWateredToday(id),p=PLANTS.find(x=>x.id===id);
+  const cls='sky '+(big?'':'tiny ')+(on?'watered':'');
+  const w=actWord(p); const label=big?(on?`✓ Done today — tap to undo`:`${p.medium==='water'?'🔄':'💧'} Mark ${w.toLowerCase()}ed today`):(on?'✓ Done':(p.medium==='water'?'🔄 Refresh':'💧 Water'));
+  return `<button class="${cls}" onclick="toggleWatered('${id}',event)">${label}</button>`;}
+function toggleFed(id){const s=ps(id),p=PLANTS.find(x=>x.id===id);
+  if(isSameDay(s.lastFed)){setPs(id,{lastFed:s.prevFed||null,prevFed:null});toast(`↩️ feeding unmarked`);}
+  else{setPs(id,{prevFed:s.lastFed||null,lastFed:today0().toISOString()});toast(`🍽️ ${p.name} fertilized`);}
+  if(openId===id)renderModalBody();}
+function fedBtn(id){const on=isFedToday(id);
+  return `<button class="ghost ${on?'done':''}" onclick="toggleFed('${id}')">${on?'✓ Fertilized today — tap to undo':'🍽️ Mark fertilized today'}</button>`;}
+
+/* ============ modal ============ */
+const TABS=[['overview','🌟 Overview'],['water','💧 Water'],['placement','☀️ Placement'],['soil','🪴 Soil'],
+  ['climate','🌡️ Temp & Humidity'],['fertilizer','🍽️ Fertilizer'],['repot','📦 Repot'],['propagate','✂️ Propagate'],['issues','🐛 Issues & Log']];
+function openModal(id){openId=id;openTab='overview';const p=PLANTS.find(x=>x.id===id);
+  document.getElementById('mSprite').textContent=p.sprite;
+  document.getElementById('mName').textContent=p.name;
+  document.getElementById('mBot').textContent=p.botanical;
+  document.getElementById('mTabs').innerHTML=TABS.map(([k,l])=>`<button data-tab="${k}" class="${k===openTab?'on':''}" onclick="switchTab('${k}')">${l}</button>`).join('');
+  renderModalBody();document.getElementById('scrim').classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('scrim').classList.remove('open');document.body.style.overflow='';openId=null;}
+function switchTab(k){openTab=k;document.querySelectorAll('#mTabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===k));renderModalBody();}
+function srcHTML(p){return p.sources&&p.sources.length?`<div class="sources">📚 ${p.sources.map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(' · ')}</div>`:''}
+function renderModalBody(){
+  const p=PLANTS.find(x=>x.id===openId),body=document.getElementById('mBody');
+  const d=daysUntil(p),due=d<=0,s=ps(p.id);
+  const lastW=s.lastWatered?fmtDate(new Date(s.lastWatered)):'—', fed=s.lastFed?fmtDate(new Date(s.lastFed)):'—';
+  const st=s.status||p.currentStatus, room=ROOM_BY_ID[p.location];
+  let h='';
+  if(openTab==='overview'){h=`<div class="pane">
+    <div class="note-box"><b>${p.headline}</b></div>
+    ${st?`<div class="note-box ${p.medium==='water'?'water':''}">📍 <b>Right now:</b> ${st}</div>`:''}
+    <div class="kv"><dt>Plot ID</dt><dd>${p.id}</dd><dt>Home</dt><dd>${room?room.name:p.location}</dd>
+      <dt>Medium</dt><dd>${p.medium==='water'?'Rooting in water 💧':'Potted in soil 🪴'}</dd>
+      <dt>Light zone</dt><dd>${ZONE[p.zone]} indirect${p.growLight?' · ⚡ grow light':''}</dd>
+      <dt>Stage</dt><dd>${STAGE[p.stage]}</dd><dt>Last ${p.medium==='water'?'refreshed':'watered'}</dt><dd>${lastW}</dd>
+      <dt>Next check</dt><dd>${due?'now':fmtDate(nextCheck(p))}</dd></div>
+    <h4>Quick tips</h4><ul>${p.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
+    <div class="actions-row">${waterBtn(p.id,true)}${fedBtn(p.id)}</div>${srcHTML(p)}</div>`;}
+  else if(openTab==='water'){h=`<div class="pane"><h4>💧 Watering</h4><p>${p.water}</p>
+    <div class="note-box warn">Cool &amp; dim home = slow-drying soil. <b>Finger-check 2" down first;</b> when in doubt, wait.</div>
+    <div class="kv"><dt>Check every</dt><dd>~${interval(p)} days${p.medium==='water'?' (water refresh)':''}</dd>
+      <dt>Last ${p.medium==='water'?'refreshed':'watered'}</dt><dd>${lastW}</dd><dt>Next</dt><dd>${due?'now':fmtDate(nextCheck(p))}</dd></div>
+    <div class="actions-row">${waterBtn(p.id,true)}</div></div>`;}
+  else if(openTab==='placement'){h=`<div class="pane"><h4>☀️ Light &amp; placement</h4><p>${p.light}</p>
+    <div class="kv"><dt>Best spot</dt><dd>${room?room.name+' — '+room.note:p.location}</dd><dt>Zone</dt><dd>${ZONE[p.zone]} indirect</dd></div>${srcHTML(p)}</div>`;}
+  else if(openTab==='soil'){h=`<div class="pane"><h4>🪴 Soil</h4><p>${p.soil}</p></div>`;}
+  else if(openTab==='climate'){h=`<div class="pane"><h4>🌡️ Temperature</h4><p>${p.temp}</p><h4>💦 Humidity</h4><p>${p.humidity}</p></div>`;}
+  else if(openTab==='fertilizer'){h=`<div class="pane"><h4>🍽️ Fertilizer</h4><p>${p.fertilizer}</p>
+    <div class="note-box">🍽️ <b>"Fertilized" = you gave it plant food</b> (diluted liquid feed). Mark it each time you feed — ~monthly spring–summer. <b>Skip fresh cuttings & winter.</b> The date stops you double-feeding (salt buildup burns tips).</div>
+    <div class="kv"><dt>Last fertilized</dt><dd>${fed}</dd></div><div class="actions-row">${fedBtn(p.id)}</div></div>`;}
+  else if(openTab==='repot'){h=`<div class="pane"><h4>📦 Repotting</h4><p>${p.repot}</p></div>`;}
+  else if(openTab==='propagate'){h=`<div class="pane"><h4>✂️ Propagation</h4><p>${p.propagate}</p></div>`;}
+  else if(openTab==='issues'){h=`<div class="pane"><h4>🐛 Common issues</h4>
+    <ul>${p.issues.map(i=>`<li><b>${i.sign}</b> → ${i.fix}</li>`).join('')}</ul>
+    <h4>📓 Your log</h4><div id="logList">${logHTML(p.id)}</div>
+    <div class="log-form"><input id="logInput" placeholder="Note an observation…" onkeydown="if(event.key==='Enter')addLog('${p.id}')"><button onclick="addLog('${p.id}')">Add</button></div></div>`;}
+  body.innerHTML=h;
+}
+function logHTML(id){const log=ps(id).log||[];if(!log.length)return '<div class="log-empty">No notes yet. 🌱</div>';
+  return log.slice().reverse().map((e,ri)=>{const idx=log.length-1-ri;
+    return `<div class="log-item"><span class="date">${fmtDate(new Date(e.t))}</span><span>${e.txt}</span><button class="ghost tiny" style="margin-left:auto" onclick="delLog('${id}',${idx})">✕</button></div>`;}).join('');}
+function addLog(id){const i=document.getElementById('logInput'),txt=(i.value||'').trim();if(!txt)return;
+  const log=ps(id).log||[];log.push({t:new Date().toISOString(),txt});setPs(id,{log});i.value='';document.getElementById('logList').innerHTML=logHTML(id);}
+function delLog(id,idx){const log=ps(id).log||[];log.splice(idx,1);setPs(id,{log});document.getElementById('logList').innerHTML=logHTML(id);}
+
+/* ============ HOME MAP (hand-drawn SVG from home.json) ============ */
+const FLOOR={wood:'#c89b62',carpet:'#d9cbb6',tile:'#cfd8d2',grass:'#7cae48'};
+const PLANK={wood:'#a87c48',carpet:'#cabda6',tile:'#bcc7bf',grass:'#6a9c3a'};
+function renderHomeMap(){
+  const T=HOME.grid.tile, W=HOME.grid.cols*T, H=HOME.grid.rows*T;
+  let defs='', floors='', walls='', wins='', glows='', labels='', plants='';
+  // base hall floor
+  floors+=`<rect x="0" y="0" width="${W}" height="${H}" fill="#b98f57"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="url(#hall)"/>`;
+  defs+=`<pattern id="hall" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#b48a52"/><rect width="16" height="2" fill="#a37e49"/></pattern>`;
+  (HOME.rooms||[]).forEach(r=>{
+    const x=r.x*T,y=r.y*T,w=r.w*T,h=r.h*T;
+    const base=FLOOR[r.floor]||'#c89b62', plank=PLANK[r.floor]||'#a87c48';
+    const pid=`f_${r.id}`;
+    defs+=`<pattern id="${pid}" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="${base}"/><rect width="20" height="2" fill="${plank}"/></pattern>`;
+    floors+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#${pid})"/>`;
+    // light glow from window(s) or ambient
+    const gs={5:.55,4:.42,3:.34,2:.22,1:.12,0:0}[r.light]||0;
+    const dark=Math.max(0,5-r.light)*0.05;
+    (r.windows||[]).forEach((wd,i)=>{
+      const gid=`g_${r.id}_${i}`; let cx,cy;
+      if(wd.edge==='top'){cx=x+w/2;cy=y;} else if(wd.edge==='bottom'){cx=x+w/2;cy=y+h;}
+      else if(wd.edge==='left'){cx=x;cy=y+h/2;} else {cx=x+w;cy=y+h/2;}
+      const strength=wd.direct?gs+0.22:gs;
+      defs+=`<radialGradient id="${gid}" cx="${((cx-x)/w*100)}%" cy="${((cy-y)/h*100)}%" r="90%">
+        <stop offset="0%" stop-color="rgba(255,241,190,${Math.min(.85,strength)})"/><stop offset="70%" stop-color="rgba(255,241,190,0)"/></radialGradient>`;
+      glows+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#${gid})"/>`;
+    });
+    if(dark>0) glows+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(24,16,32,${dark})"/>`;
+    // walls
+    walls+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#4e341f" stroke-width="5"/>`;
+    // windows (glowing strips on the edge)
+    (r.windows||[]).forEach(wd=>{
+      const th=6; let wx,wy,ww,wh;
+      if(wd.edge==='top'){ww=w*0.6;wh=th;wx=x+(w-ww)/2;wy=y-th/2;}
+      else if(wd.edge==='bottom'){ww=w*0.68;wh=th;wx=x+(w-ww)/2;wy=y+h-th/2;}
+      else if(wd.edge==='left'){wh=h*0.6;ww=th;wx=x-th/2;wy=y+(h-wh)/2;}
+      else {wh=h*0.6;ww=th;wx=x+w-th/2;wy=y+(h-wh)/2;}
+      wins+=`<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="2" fill="#dff0f7" stroke="#8bb8cc" stroke-width="1.5"/>`;
+      if(wd.direct){const sx=(wd.edge==='top'||wd.edge==='bottom')?wx+ww+6:wx+ww/2;const sy=(wd.edge==='top')?wy+8:wd.edge==='bottom'?wy-8:wy-8;
+        wins+=`<text x="${sx}" y="${sy}" font-size="12" text-anchor="middle">☀️</text>`;}
+    });
+    // label
+    const dim=r.light<=2&&!r.outdoor;
+    labels+=`<text x="${x+8}" y="${y+16}" font-family="'Pixelify Sans',monospace" font-size="12" font-weight="700" fill="${dim?'#f4ead9':'#3a2413'}" style="paint-order:stroke;stroke:${dim?'rgba(0,0,0,.5)':'rgba(255,255,255,.35)'};stroke-width:2px">${r.name}</text>`;
+    labels+=`<text x="${x+w-6}" y="${y+16}" text-anchor="end" font-size="9">${r.outdoor?'🌳':(r.light>0?'☀️'.repeat(r.light):'🌑')}</text>`;
+    // plants in this room
+    const here=PLANTS.filter(p=>p.location===r.id);
+    if(here.length){
+      const padX=26, span=w-padX*2, step=here.length>1?span/(here.length-1):0;
+      const py=y+h-30;
+      here.forEach((p,i)=>{
+        const px=here.length>1?x+padX+step*i:x+w/2;
+        plants+=`<g class="plant-g" onclick="openModal('${p.id}')" transform="translate(${px},${py})">
+          <ellipse cx="0" cy="20" rx="15" ry="4" fill="rgba(0,0,0,.22)"/>
+          <path d="M-11 6 L11 6 L8 20 L-8 20 Z" fill="#b5623a" stroke="#7a3f24" stroke-width="1.5"/>
+          <rect x="-12" y="3" width="24" height="4" rx="1.5" fill="#c8703f" stroke="#7a3f24" stroke-width="1.2"/>
+          <text class="pot-emoji" x="0" y="2" font-size="21" text-anchor="middle">${p.sprite}</text>
+          ${p.growLight?'<text x="12" y="-6" font-size="11" text-anchor="middle">⚡</text>':''}
+          <rect x="-11" y="21" width="22" height="11" rx="3" fill="#6f4526"/>
+          <text x="0" y="29" font-size="8" font-weight="800" text-anchor="middle" fill="#fff5df">${p.id}</text>
+        </g>`;
+      });
+    }
+  });
+  const svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Apartment map">
+    <defs>${defs}</defs>${floors}${glows}${walls}${wins}${labels}${plants}</svg>`;
+  document.getElementById('mapframe').innerHTML=svg;
+  document.getElementById('maplegend').innerHTML=`<span>☀️ <b>light</b> (1–5)</span><span>☀️ next to a window = <b>direct sun</b></span><span><b>⚡</b> grow light</span><span>🌑 no light</span><span>Tap a plant to open its card</span>`;
+}
+function switchView(v){const care=v==='care';currentView=v;
+  document.getElementById('careView').hidden=!care;document.getElementById('homeView').hidden=care;
+  document.getElementById('navCare').classList.toggle('on',care);document.getElementById('navHome').classList.toggle('on',!care);
+  if(!care)renderHomeMap();window.scrollTo({top:0,behavior:'smooth'});}
+
+/* ============ ICS export ============ */
+function icsDate(d){return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`}
+function icsStamp(){return new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z'}
+function fold(l){const o=[];while(l.length>73){o.push(l.slice(0,73));l=' '+l.slice(73);}o.push(l);return o.join('\r\n');}
+function vevent({uid,start,summary,desc,rrule}){let s=['BEGIN:VEVENT',`UID:${uid}`,`DTSTAMP:${icsStamp()}`,`DTSTART;VALUE=DATE:${icsDate(start)}`,fold(`SUMMARY:${summary}`)];
+  if(desc)s.push(fold(`DESCRIPTION:${desc.replace(/\n/g,'\\n')}`));if(rrule)s.push(`RRULE:${rrule}`);
+  s.push('BEGIN:VALARM','TRIGGER:PT0S','ACTION:DISPLAY',fold(`DESCRIPTION:${summary}`),'END:VALARM','END:VEVENT');return s.join('\r\n');}
+function exportICS(){const ev=[],start=new Date(today0().getTime()+DAY);
+  PLANTS.forEach(p=>{const ws=ps(p.id).lastWatered?nextCheck(p):start;
+    ev.push(vevent({uid:`water-${p.id}@alpj`,start:ws<today0()?start:ws,summary:`${p.medium==='water'?'🔄':'💧'} ${actWord(p)} ${p.name}`,desc:`${p.water}\\nFinger-check first.`,rrule:`FREQ=DAILY;INTERVAL=${interval(p)}`}));
+    if(p.stage!=='establishing')ev.push(vevent({uid:`feed-${p.id}@alpj`,start:new Date(start.getTime()+3*DAY),summary:`🍽️ Feed ${p.name}`,desc:`${p.fertilizer}\\nGrowing season only.`,rrule:`FREQ=MONTHLY;INTERVAL=1`}));
+    if(p.stage==='propReady')ev.push(vevent({uid:`prop-${p.id}@alpj`,start:new Date(today0().getTime()+90*DAY),summary:`✂️ Propagate ${p.name}?`,desc:p.propagate}));
+    if(p.stage==='establishing')ev.push(vevent({uid:`root-${p.id}@alpj`,start:new Date(today0().getTime()+28*DAY),summary:`🌱 ${p.name}: rooted? pot up & normalize care`,desc:'Tug-test for roots, then reduce humidity & start normal watering.'}));});
+  const cal=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//ALPJ Ranch//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:ALPJ Ranch 🌿',...ev,'END:VCALENDAR'].join('\r\n');
+  const blob=new Blob([cal],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='alpj-ranch.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('📅 Calendar downloaded — import in Google Calendar');}
+
+/* ============ misc ============ */
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+</script>
+</body>
+</html>

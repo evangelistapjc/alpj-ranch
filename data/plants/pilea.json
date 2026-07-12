@@ -1,0 +1,49 @@
+{
+  "id": "PIL",
+  "name": "Pilea (Chinese Money Plant)",
+  "botanical": "Pilea peperomioides · baby, ~12 stems",
+  "sprite": "🍀",
+  "location": "bedroom",
+  "zone": "bright",
+  "stage": "establishing",
+  "difficulty": "easy",
+  "medium": "soil",
+  "currentStatus": "Soil fairly dry — water within a day or two",
+  "growLight": false,
+  "waterDays": 10,
+  "waterBucket": "regular",
+  "headline": "The friendship plant — pops out shareable pups when happy.",
+  "water": "Water when top 2–3\" are dry (~weekly, longer when cool). Drooping = thirsty. Empty the saucer.",
+  "light": "Bright indirect. Rotate every few days or it leans hard toward the window.",
+  "soil": "Well-draining potting mix with extra perlite.",
+  "temp": "60–75°F — your cool apartment suits it fine.",
+  "humidity": "Tolerates normal/dry air.",
+  "fertilizer": "Diluted monthly spring–summer. White crust = ease off / flush.",
+  "repot": "When rootbound; separate pups to share.",
+  "propagate": "Easiest of the bunch — twist off pups once ~1–2\" tall.",
+  "tips": [
+    "Rotate a quarter-turn each watering for a round shape.",
+    "Wipe the coin leaves so they soak up your limited light.",
+    "Lower leaves dropping as it grows tall is normal."
+  ],
+  "issues": [
+    {
+      "sign": "Tall bare stem",
+      "fix": "Low light — brightest spot."
+    },
+    {
+      "sign": "Leaning one way",
+      "fix": "Rotate regularly."
+    },
+    {
+      "sign": "Curling + soggy soil",
+      "fix": "Overwatered; let it dry."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Bob Vila",
+      "url": "https://www.bobvila.com/articles/pilea-care/"
+    }
+  ]
+}
