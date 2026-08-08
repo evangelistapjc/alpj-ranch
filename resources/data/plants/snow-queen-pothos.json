@@ -3,7 +3,7 @@
   "name": "Snow Queen Pothos",
   "botanical": "Epipremnum aureum 'Snow Queen'",
   "sprite": "❄️",
-  "location": "den",
+  "location": "bedroom",
   "zone": "medium",
   "stage": "growing",
   "difficulty": "easy",
@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 12,
   "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      60,
+      80
+    ],
+    "humidityPct": [
+      40,
+      60
+    ],
+    "draftSensitive": false
+  },
   "headline": "Mostly-white leaves = needs real light to stay snowy.",
   "water": "Let it mostly dry (top 1–2\"), then soak. ~10–12 days. Soft leaves = thirsty.",
   "light": "Bright indirect. 70–90% white with little chlorophyll, so low light makes new leaves revert green.",
@@ -45,5 +56,6 @@
       "label": "Ohio Tropics",
       "url": "https://www.ohiotropics.com/2022/05/13/snow-queen-pothos-care/"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/snow-queen-pothos.svg"
 }

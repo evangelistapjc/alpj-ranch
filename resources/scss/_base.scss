@@ -90,3 +90,9 @@ button {
   .sign .plot-count { margin-left:0; }
 }
 @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+
+/* Plant sprites — authored SVG, emoji fallback. */
+.sprite-img { display:block; object-fit:contain; image-rendering:auto; }
+.sprite-emoji { line-height:1; display:inline-block; }
+.c-sprite .sprite-img, .t-emoji .sprite-img, .tray-sprite .sprite-img { margin:0 auto; }
+.m-sprite .sprite-img { width:42px; height:42px; }

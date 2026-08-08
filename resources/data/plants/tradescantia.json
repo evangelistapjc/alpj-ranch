@@ -3,7 +3,7 @@
   "name": "Tradescantia \"Feeling Dreamy\"",
   "botanical": "Tradescantia cv.",
   "sprite": "💜",
-  "location": "kitchen",
+  "location": "patio",
   "zone": "bright",
   "stage": "growing",
   "difficulty": "easy",
@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 10,
   "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      60,
+      80
+    ],
+    "humidityPct": [
+      50,
+      70
+    ],
+    "draftSensitive": true
+  },
   "headline": "Fast, forgiving, colorful — and your kitchen's direct sun keeps it vivid.",
   "water": "Let the top inch dry; ~weekly. Droopy = drink me. Hates soggy.",
   "light": "Bright indirect + the kitchen's direct sun is perfect for holding its pink/purple.",
@@ -45,5 +56,6 @@
       "label": "Bloomscape",
       "url": "https://bloomscape.com/plant-care-guide/tradescantia/"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/tradescantia.svg"
 }

@@ -9,8 +9,9 @@
     "plants/snow-queen-pothos.json",
     "plants/philodendron-brasil.json",
     "plants/rubber-plant.json",
-    "plants/money-tree.json"
+    "plants/money-tree.json",
+    "plants/monstera-new.json"
   ],
   "almanac": "almanac.json",
-  "count": 9
+  "count": 10
 }

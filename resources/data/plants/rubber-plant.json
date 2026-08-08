@@ -3,7 +3,7 @@
   "name": "Rubber Plant",
   "botanical": "Ficus elastica (fresh cutting)",
   "sprite": "🌳",
-  "location": "kitchen",
+  "location": "bedroom",
   "zone": "medium",
   "stage": "establishing",
   "difficulty": "moderate",
@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 12,
   "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      60,
+      80
+    ],
+    "humidityPct": [
+      45,
+      65
+    ],
+    "draftSensitive": true
+  },
   "headline": "Freshly propagated — hates cold drafts, so mind the first floor.",
   "water": "In water now: refresh every ~5–7 days. Once potted: top 1–2\" dry (~10–12 days).",
   "light": "Bright indirect is best; the kitchen's light suits it. Low light = slow & leggy.",
@@ -45,5 +56,6 @@
       "label": "The Spruce",
       "url": "https://www.thespruce.com/grow-rubber-tree-plant-1902756"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/rubber-plant.svg"
 }

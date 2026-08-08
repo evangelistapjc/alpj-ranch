@@ -3,7 +3,7 @@
   "name": "Hoya obovata",
   "botanical": "Hoya obovata (fresh cutting)",
   "sprite": "🌸",
-  "location": "bedroom",
+  "location": "patio",
   "zone": "bright",
   "stage": "establishing",
   "difficulty": "moderate",
@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 16,
   "waterBucket": "sip",
+  "needs": {
+    "tempF": [
+      65,
+      85
+    ],
+    "humidityPct": [
+      50,
+      70
+    ],
+    "draftSensitive": true
+  },
   "headline": "Freshly propagated — rooting in water until it takes hold.",
   "water": "In water now: refresh every ~5–7 days, keep nodes submerged. Once potted: semi-succulent, let soil dry almost fully (~2 wks).",
   "light": "Bright indirect. Not a low-light plant; it won't bloom without good light.",
@@ -45,5 +56,6 @@
       "label": "Ohio Tropics",
       "url": "https://www.ohiotropics.com/2020/04/17/hoya-obovata-care/"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/hoya-obovata.svg"
 }

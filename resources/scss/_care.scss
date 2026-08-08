@@ -18,6 +18,20 @@
 }
 .all-good { padding:14px; text-align:center; color:var(--leaf-d); font-weight:700; }
 
+/* Backlog — never-recorded or long-overdue plants, with inline backdating. */
+.backlog { margin-bottom:16px; }
+.backlog-item {
+  align-items:flex-start; background:#fdf4e2; border-color:var(--gold);
+  .t-main { display:flex; flex-direction:column; gap:5px; }
+}
+.backdate {
+  display:flex; gap:6px; align-items:center; flex-wrap:wrap;
+  input[type="date"] {
+    font-family:'Nunito',sans-serif; font-size:11px; font-weight:700; padding:3px 5px;
+    border:2px solid var(--wood-d); border-radius:6px; background:#fff; color:var(--ink); max-width:145px;
+  }
+}
+
 .grove { padding:14px 16px 20px; }
 .toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0 16px; }
 .seg {
@@ -65,6 +79,17 @@
   &.water { background:#e4f3f9; border-color:var(--sky-d); color:#255d76; }
   &.stage { background:#eaf5e0; border-color:var(--leaf-d); color:#39631f; }
   &.grow  { background:#f3ecff; border-color:#8a6bd0; color:#5a3fa0; }
+  /* how well the plant's current room actually suits it */
+  &.fit.good { background:#eaf5e0; border-color:var(--leaf-d); color:#39631f; }
+  &.fit.ok   { background:#fff6d9; border-color:var(--gold); color:#8a6410; }
+  &.fit.poor { background:#fdeee7; border-color:var(--clay); color:#9c3f26; }
+}
+
+/* "Last watered Aug. 8" — the running record, right on the card. */
+.c-last {
+  font-size:11px; color:var(--ink-soft); border-top:2px dashed var(--wood); padding-top:7px;
+  b { color:var(--ink); }
+  &.never { color:#9c3f26; }
 }
 .c-status {
   font-size:11px; background:#fff8e6; border:1.5px solid var(--wood); border-radius:6px; padding:5px 7px; color:var(--ink);

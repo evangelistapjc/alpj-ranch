@@ -3,7 +3,7 @@
   "name": "Philodendron Brasil",
   "botanical": "Philodendron hederaceum 'Brasil' (fresh cutting)",
   "sprite": "🍃",
-  "location": "den",
+  "location": "living",
   "zone": "medium",
   "stage": "establishing",
   "difficulty": "easy",
@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 10,
   "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      65,
+      80
+    ],
+    "humidityPct": [
+      40,
+      60
+    ],
+    "draftSensitive": false
+  },
   "headline": "Freshly propagated & your most low-light-tolerant plant.",
   "water": "In water now: refresh every ~5–7 days. Once potted: top 1–2\" dry (~10 days).",
   "light": "Tolerates low–medium, but the lime stripe needs medium–bright to stay vivid.",
@@ -45,5 +56,6 @@
       "label": "The Spruce",
       "url": "https://www.thespruce.com/grow-philodendron-brasil-5077387"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/philodendron-brasil.svg"
 }
