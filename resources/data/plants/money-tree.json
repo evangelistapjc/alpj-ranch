@@ -3,7 +3,7 @@
   "name": "Money Tree",
   "botanical": "Pachira aquatica · braided",
   "sprite": "🌴",
-  "location": "living",
+  "location": "kitchen",
   "zone": "medium",
   "stage": "growing",
   "difficulty": "moderate",
@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 12,
   "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      65,
+      85
+    ],
+    "humidityPct": [
+      40,
+      60
+    ],
+    "draftSensitive": true
+  },
   "headline": "All-green & understory-adapted — one of your more low-light-friendly plants. Pet-safe.",
   "water": "Overwatering is the #1 killer. Water when top 1–2\" dry, err dry (~12–14 days when cool).",
   "light": "Prefers bright indirect but tolerates medium/light shade. Direct sun scorches. Rotate.",
@@ -45,5 +56,6 @@
       "label": "Soltech",
       "url": "https://soltech.com/products/money-tree-care"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/money-tree.svg"
 }

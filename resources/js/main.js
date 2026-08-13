@@ -5,8 +5,8 @@
 //   weather → live conditions               actions→ user interactions
 //   events → delegated listeners            config → constants
 // ===========================================================================
-import { loadData, Store } from './state.js';
-import { renderShell, renderCare } from './views.js';
+import { loadData, Store, UI } from './state.js';
+import { renderShell, renderCare, renderWeather, renderModalBody } from './views.js';
 import { loadWeather } from './weather.js';
 import { initTheme, toast } from './actions.js';
 import { wireEvents } from './events.js';
@@ -19,7 +19,14 @@ async function boot(){
     initTheme();           // apply saved theme (stardew / ghibli / lego)
     renderCare();          // default view
     wireEvents();          // one-time delegated listeners
-    loadWeather();         // async, fills the weather tile when ready
+
+    // Weather is async and feeds the schedule (dry factor) plus the outdoor
+    // microclimate, so repaint once it lands.
+    loadWeather().then(() => {
+      renderCare();
+      if (UI.view === 'weather') renderWeather();
+      if (UI.openId) renderModalBody();
+    });
 
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
       navigator.serviceWorker.register('sw.js').catch(() => {});

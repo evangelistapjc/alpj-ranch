@@ -12,6 +12,17 @@
   "growLight": true,
   "waterDays": 18,
   "waterBucket": "sip",
+  "needs": {
+    "tempF": [
+      60,
+      85
+    ],
+    "humidityPct": [
+      30,
+      50
+    ],
+    "draftSensitive": false
+  },
   "headline": "Your light diva. More light = pinker hearts, tighter spacing.",
   "water": "Soak-and-dry. Let it dry out almost fully, then water thoroughly. ~every 2.5–3 wks here.",
   "light": "The hungriest plant you own. Brightest indirect light — but even your bay window is indirect, so a grow light is the real fix. Low light = hearts space out & lose pink.",
@@ -45,5 +56,6 @@
       "label": "Ohio Tropics",
       "url": "https://www.ohiotropics.com/2022/11/16/variegated-string-of-hearts-care/"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/string-of-hearts.svg"
 }

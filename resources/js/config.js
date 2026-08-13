@@ -13,6 +13,22 @@ export const WMO = {
   81:['🌧️','Showers'], 82:['⛈️','Heavy showers'], 95:['⛈️','Thunderstorm'], 96:['⛈️','Thunderstorm'], 99:['⛈️','Thunderstorm']
 };
 
+// how many days of weather readings to keep in alpj_weather
+export const WX_KEEP_DAYS = 60;
+
+// Each room wall carries this many addressable slots, so a plant's position on
+// the map is a real place ("2nd sill from the right") rather than an index the
+// renderer happened to space out.
+export const SLOTS_PER_WALL = 5;
+export const WALLS = ['top', 'right', 'bottom', 'left'];
+
+// room light rating (0–5) → how well it suits each plant light zone
+export const LIGHT_FIT = {
+  bright: { good:[4,5],   ok:[3]     },
+  medium: { good:[2,3,4], ok:[1,5]   },
+  low:    { good:[1,2],   ok:[3,4]   }
+};
+
 // modal tabs: [key, label]
 export const TABS = [
   ['overview','🌟 Overview'], ['water','💧 Water'], ['placement','☀️ Placement'], ['soil','🪴 Soil'],

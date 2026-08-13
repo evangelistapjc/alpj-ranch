@@ -1,0 +1,61 @@
+{
+  "id": "MO2",
+  "name": "Monstera (new)",
+  "botanical": "Monstera deliciosa · recent addition",
+  "sprite": "🌿",
+  "location": "living",
+  "zone": "medium",
+  "stage": "establishing",
+  "difficulty": "moderate",
+  "medium": "soil",
+  "currentStatus": "Newly arrived — settling in; hold off feeding until it pushes a leaf",
+  "growLight": false,
+  "waterDays": 12,
+  "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      65,
+      85
+    ],
+    "humidityPct": [
+      50,
+      70
+    ],
+    "draftSensitive": false
+  },
+  "headline": "The new one. Living room is dim (0h direct sun) — watch for small, hole-less leaves.",
+  "water": "Water when top 1–2\" dry. Slower here than the bedroom: the living room is north-facing and cool.",
+  "light": "Wants bright indirect. The living room slider is the only light it gets, so keep it hugging the glass.",
+  "soil": "Chunky aroid mix — bark + perlite + potting soil.",
+  "temp": "65–85°F.",
+  "humidity": "Prefers moderate–high; tolerates average.",
+  "fertilizer": "Skip while it settles; balanced monthly once it is actively growing.",
+  "repot": "Leave it be for now; repot once roots fill the pot.",
+  "propagate": "Not yet — let it establish first.",
+  "tips": [
+    "New arrivals sulk for a few weeks; that is normal.",
+    "Quarantine away from the others for ~2 weeks and watch for pests.",
+    "Hole-less new leaves here mean the living room is too dim — consider the bedroom."
+  ],
+  "issues": [
+    {
+      "sign": "No splits on new leaves",
+      "fix": "Not enough light — move toward the slider or the bedroom bay."
+    },
+    {
+      "sign": "Yellow lower leaves",
+      "fix": "Overwatering, likely in this cool room."
+    },
+    {
+      "sign": "Drooping after the move",
+      "fix": "Transplant shock; keep care steady and wait."
+    }
+  ],
+  "sources": [
+    {
+      "label": "The Spruce",
+      "url": "https://www.thespruce.com/monstera-plant-profile-5072671"
+    }
+  ],
+  "spriteFile": "resources/icons/plant-sprites/monstera-new.svg"
+}

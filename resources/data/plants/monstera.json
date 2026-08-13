@@ -3,7 +3,7 @@
   "name": "Monstera",
   "botanical": "Monstera deliciosa · large",
   "sprite": "🌿",
-  "location": "living",
+  "location": "bedroom",
   "zone": "medium",
   "stage": "propReady",
   "difficulty": "moderate",
@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 12,
   "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      65,
+      85
+    ],
+    "humidityPct": [
+      50,
+      70
+    ],
+    "draftSensitive": false
+  },
   "headline": "Your big one — prop candidate in ~3 months. Loves bright indirect (would adore the bedroom).",
   "water": "Water when top 1–2\" dry (~10–12 days when cool/low-light).",
   "light": "Bright indirect for splits; the north bedroom bay would suit it better than the dim living room.",
@@ -45,5 +56,6 @@
       "label": "The Spruce",
       "url": "https://www.thespruce.com/monstera-plant-profile-5072671"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/monstera.svg"
 }

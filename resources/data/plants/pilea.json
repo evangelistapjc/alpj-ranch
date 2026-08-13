@@ -12,6 +12,17 @@
   "growLight": false,
   "waterDays": 10,
   "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      60,
+      75
+    ],
+    "humidityPct": [
+      40,
+      60
+    ],
+    "draftSensitive": false
+  },
   "headline": "The friendship plant — pops out shareable pups when happy.",
   "water": "Water when top 2–3\" are dry (~weekly, longer when cool). Drooping = thirsty. Empty the saucer.",
   "light": "Bright indirect. Rotate every few days or it leans hard toward the window.",
@@ -45,5 +56,6 @@
       "label": "Bob Vila",
       "url": "https://www.bobvila.com/articles/pilea-care/"
     }
-  ]
+  ],
+  "spriteFile": "resources/icons/plant-sprites/pilea.svg"
 }
