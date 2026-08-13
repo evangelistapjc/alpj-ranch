@@ -5,7 +5,7 @@ name: Deploy ALPJ Ranch to GitHub Pages
 
 on:
   push:
-    branches: [main]        # change to "master" if that's your default branch
+    branches: [master]      # this repo's default branch is master, not main
   workflow_dispatch:
 
 permissions:
