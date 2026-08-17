@@ -30,7 +30,24 @@ async function boot(){
       if (UI.openId) renderModalBody();
     });
 
+    // Stamp the running version into the footer so "am I on the new build?"
+    // is answerable without opening devtools.
+    fetch('version.json', { cache:'no-store' })
+      .then(r => r.json())
+      .then(v => { const el = document.getElementById('appVer');
+                   if (el) el.textContent = 'v' + v.version; })
+      .catch(() => {});
+
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
+      // If a new worker takes over while this page is open, the page is still
+      // running the old modules. Reload once — guarded, or skipWaiting +
+      // claim would put us in a reload loop.
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading) return;
+        reloading = true;
+        location.reload();
+      });
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
     if (!Store.persists){

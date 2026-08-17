@@ -96,3 +96,8 @@ button {
 .sprite-emoji { line-height:1; display:inline-block; }
 .c-sprite .sprite-img, .t-emoji .sprite-img, .tray-sprite .sprite-img { margin:0 auto; }
 .m-sprite .sprite-img { width:42px; height:42px; }
+
+.foot .ver {
+  display:inline-block; font-weight:800; font-size:10px; letter-spacing:.5px;
+  background:rgba(0,0,0,.28); border-radius:20px; padding:1px 8px; margin-right:6px;
+}
