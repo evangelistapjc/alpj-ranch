@@ -18,7 +18,14 @@ function onClick(e){
   // swallow the click the browser sends afterwards so it can't also open the card.
   const g = e.target.closest?.('.plant-g');
   if (g && UI.arrange) return;
+  if (UI.arrange && e.target.closest?.('[data-tray]')) return;
 
+  if (UI.build){
+    const wb = e.target.closest?.('.wallbtn');
+    if (wb){ A.wallWindow(wb.dataset.wallroom, wb.dataset.wall); return; }
+    const rh = e.target.closest?.('[data-roomhit]');
+    if (rh && !e.target.closest('[data-action]')){ A.selectRoom(rh.dataset.roomhit); return; }
+  }
   const el = e.target.closest('[data-action]');
   if (!el) return;
   const d = el.dataset;
@@ -46,6 +53,15 @@ function onClick(e){
     case 'resetlayout': A.resetLayout();                      break;
     case 'resetapartment': A.resetApartment();                break;
     case 'exporthome':  A.exportHome();                       break;
+    // room builder
+    case 'build':       A.toggleBuild();                      break;
+    case 'addroom':     A.addNewRoom();                       break;
+    case 'selroom':     A.selectRoom(d.room);                 break;
+    case 'deselroom':   A.deselectRoom();                     break;
+    case 'delroom':     A.deleteRoomAction(d.room);           break;
+    case 'togglewin':   A.wallWindow(d.room, d.wall);         break;
+    case 'toggledoor':  A.wallDoor(d.room, d.wall);           break;
+    case 'winsun':      A.wallSun(d.room, d.wall);            break;
     // journal sync between origins (phone ⇄ laptop)
     case 'exportjournal': A.exportJournalFile();              break;
     case 'importjournal': A.importJournalFile();              break;
@@ -54,6 +70,11 @@ function onClick(e){
 
 function onChange(e){
   if (e.target.id === 'themeSel') A.setTheme(e.target.value);
+  const d = e.target.dataset || {};
+  if (d.roomname)    A.renameRoom(d.roomname, e.target.value);
+  if (d.roomlight)   A.setRoomLight(d.roomlight, e.target.value);
+  if (d.roomfloor)   A.setRoomFloor(d.roomfloor, e.target.value);
+  if (d.roomoutdoor) A.setRoomOutdoor(d.roomoutdoor, e.target.checked);
 }
 
 function onKey(e){
@@ -78,12 +99,29 @@ function onKey(e){
 /* --- map drag (arrange mode only) --- */
 function onPointerDown(e){
   if (e.button != null && e.button !== 0) return;         // left button / touch only
+  if (UI.build){
+    const rs = e.target.closest?.('[data-resize]');
+    if (rs){ if (A.roomDragStart(e, rs.dataset.resize, 'resize')) e.preventDefault(); return; }
+    if (e.target.closest?.('.wallbtn')) return;           // let the click handler take it
+    const rh = e.target.closest?.('[data-roomhit]');
+    if (rh){ if (A.roomDragStart(e, rh.dataset.roomhit, 'move')) e.preventDefault(); return; }
+  }
   const g = e.target.closest?.('.plant-g');
-  if (!g) return;
-  if (A.dragStart(e, g)) e.preventDefault();
+  if (g){ if (A.dragStart(e, g)) e.preventDefault(); return; }
+  // tray → map
+  const t = e.target.closest?.('[data-tray]');
+  if (t){ if (A.trayDragStart(e, t)) e.preventDefault(); }
 }
-function onPointerMove(e){ if (A.dragging()){ e.preventDefault(); A.dragMove(e); } }
-function onPointerUp(e){ if (A.dragging()) A.dragEnd(e); }
+function onPointerMove(e){
+  if (A.roomDragging()){ e.preventDefault(); A.roomDragMove(e); return; }
+  if (A.dragging()){ e.preventDefault(); A.dragMove(e); return; }
+  if (A.trayDragging()){ e.preventDefault(); A.trayDragMove(e); }
+}
+function onPointerUp(e){
+  if (A.roomDragging()){ A.roomDragEnd(e); return; }
+  if (A.dragging()){ A.dragEnd(e); return; }
+  if (A.trayDragging()) A.trayDragEnd(e);
+}
 
 export function wireEvents(){
   document.addEventListener('click', onClick);

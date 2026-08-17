@@ -10,11 +10,13 @@ import { renderShell, renderCare, renderWeather, renderModalBody } from './views
 import { loadWeather } from './weather.js';
 import { initTheme, toast } from './actions.js';
 import { wireEvents } from './events.js';
+import { applyRooms } from './rooms.js';
 
 async function boot(){
   const app = document.getElementById('app');
   try {
     await loadData();      // fetch the JSON dataset into DB
+    applyRooms();          // layer any room-builder edits over the shipped plan
     renderShell();         // build the page chrome + section containers
     initTheme();           // apply saved theme (stardew / ghibli / lego)
     renderCare();          // default view

@@ -17,11 +17,11 @@ import { loadJournal, saveJournal, pj, uid, lww, lwwValue } from './sync.js';
 const DATA_BASE = 'resources/data/';
 
 // --- loaded dataset (populated by loadData) ---
-export const DB = { home:null, plants:[], roomById:{}, almanac:null };
+export const DB = { home:null, plants:[], roomById:{}, almanac:null, shippedRooms:[] };
 
 // --- transient UI state shared across modules ---
 export const UI = { view:'care', group:'light', openId:null, openTab:'overview',
-                    arrange:false, editWater:null, dragId:null };
+                    arrange:false, build:false, selRoom:null, editWater:null, dragId:null };
 
 // Storage lives in store.js; re-exported so existing imports keep working.
 export { Store } from './store.js';
@@ -37,6 +37,8 @@ export async function loadData(){
   DB.home = home;
   DB.plants = plants;
   DB.almanac = almanac;
+  // Keep the shipped plan pristine; rooms.js layers builder edits over it.
+  DB.shippedRooms = (home.rooms || []).map(r => JSON.parse(JSON.stringify(r)));
   DB.roomById = {};
   (home.rooms || []).forEach(r => { DB.roomById[r.id] = r; });
   loadJournal();          // migrates v1/v2 storage on first read
