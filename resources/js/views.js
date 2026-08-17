@@ -130,7 +130,7 @@ export function renderShell(){
     <div id="almanac"></div>
   </section>
 
-  <p class="foot">${H.name} 🌾 · care facts from horticulture guides (linked per plant) · live weather via Open-Meteo · tuned for ${H.location.city}</p>`;
+  <p class="foot"><span id="appVer" class="ver">v…</span> ${H.name} 🌾 · care facts from horticulture guides (linked per plant) · live weather via Open-Meteo · tuned for ${H.location.city}</p>`;
 }
 
 /* ---------------- care view ---------------- */

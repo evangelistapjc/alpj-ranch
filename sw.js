@@ -1,10 +1,11 @@
 // ALPJ Ranch service worker — MUST live at the site root so its scope covers
 // the whole app. Cache-first for the app shell; network-first for JSON data.
-const VERSION = 'alpj-24b3d998e0';
+const VERSION = 'alpj-v5.0.0+1f84335f2b';
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './version.json',
   './resources/css/stylesheet.css',
   './resources/js/main.js',
   './resources/js/config.js',
@@ -57,7 +58,33 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // cache-first for everything else (app shell, fonts, icons)
+  // ---- app shell: NETWORK-FIRST -------------------------------------------
+  // This used to be cache-first, which meant a normal reload rendered the old
+  // shell from cache and only THEN noticed a new sw.js — so you were always one
+  // refresh behind and had to hard-refresh to see a deploy. Going to the network
+  // first costs nothing online and still falls back to cache when offline.
+  const isShell = url.origin === location.origin && (
+    request.mode === 'navigate' ||
+    /\.(?:html|js|css|json)$/.test(url.pathname) ||
+    url.pathname.endsWith('/')
+  );
+
+  if (isShell){
+    e.respondWith(
+      fetch(request).then((res) => {
+        if (res.ok){
+          const copy = res.clone();
+          caches.open(VERSION).then((c) => c.put(request, copy));
+        }
+        return res;
+      }).catch(() =>
+        caches.match(request).then((hit) => hit || caches.match('./index.html'))
+      )
+    );
+    return;
+  }
+
+  // cache-first is still right for things that don't change: fonts, icons, sprites
   e.respondWith(
     caches.match(request).then((hit) => hit || fetch(request).then((res) => {
       if (res.ok && url.origin === location.origin){
