@@ -14,6 +14,8 @@ import { renderCare, renderGrove, renderHomeMap, renderWeather, renderAlmanac,
          renderTray, sprite as spriteFor } from './views.js';
 import { currentWx } from './weather.js';
 import { assess, VERDICT } from './climate.js';
+import { applyRooms, patchRoom, deleteRoom as rmRoom, addRoom, clampRect,
+         toggleWindow, toggleDoor, cycleWindowSun } from './rooms.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -119,12 +121,110 @@ export function delLog(id, entryId){
    updates the whole picture.                                              */
 export function moveTo(id, roomId){
   const p = plant(id); if (!p || !DB.roomById[roomId]) return;
-  if (loc(p) === roomId){ toast(`${p.name} is already in ${DB.roomById[roomId].name}`); return; }
-  setPlacement(id, { room: roomId });
+  const wasUnplaced = !loc(p);
+  if (!wasUnplaced && loc(p) === roomId){
+    toast(`${p.name} is already in ${DB.roomById[roomId].name}`); return;
+  }
+  setPlacement(id, { room: roomId, wall:null, slot:null, order:null });
   const a = assess(p), r = DB.roomById[roomId];
   toast(`${VERDICT[a.overall][0]} ${p.name} → ${r.name} · ${VERDICT[a.overall][1].toLowerCase()} · check ~every ${a.water.eff}d`);
   refresh(id);
 }
+/* ---------------- room builder ----------------
+   Geometry is authored content, so edits land in journal.rooms via rooms.js
+   rather than in a plant's placement cell. Everything downstream reads
+   DB.home.rooms, which applyRooms() rebuilds on every change, so the sun
+   model, slot geometry and fit verdicts all follow with no extra wiring. */
+export function toggleBuild(){
+  UI.build = !UI.build;
+  if (!UI.build) UI.selRoom = null;
+  if (UI.build) UI.arrange = false;          // the two modes fight over drags
+  renderHomeMap();
+  toast(UI.build ? 'Room editing on - tap a room to select it' : 'Apartment saved');
+}
+export function selectRoom(id){ UI.selRoom = id; renderHomeMap(); }
+export function deselectRoom(){ UI.selRoom = null; renderHomeMap(); }
+
+export function addNewRoom(){
+  const g = DB.home.grid;
+  let x = 0, y = 0, found = false;
+  for (let ty = 0; ty <= g.rows - 3 && !found; ty++){
+    for (let tx = 0; tx <= g.cols - 3 && !found; tx++){
+      const clash = (DB.home.rooms || []).some(r =>
+        tx < r.x + r.w && tx + 3 > r.x && ty < r.y + r.h && ty + 3 > r.y);
+      if (!clash){ x = tx; y = ty; found = true; }
+    }
+  }
+  const id = addRoom({ name:'New Room', x, y, w:3, h:3 });
+  UI.selRoom = id;
+  renderHomeMap(); renderCare();
+  toast('Room added - name it in the panel');
+}
+
+export function deleteRoomAction(id){
+  const r = DB.roomById[id]; if (!r) return;
+  const here = DB.plants.filter(p => loc(p) === id);
+  rmRoom(id);
+  // anything standing in it would otherwise point at a room that no longer
+  // exists, so lift those plants into the tray rather than orphaning them
+  here.forEach(p => setPlacement(p.id, { room:null, wall:null, slot:null, order:null }));
+  UI.selRoom = null;
+  renderHomeMap(); renderCare();
+  toast(here.length
+    ? r.name + ' deleted - ' + here.length + ' plant(s) moved to the tray'
+    : r.name + ' deleted');
+}
+
+export function renameRoom(id, name){
+  patchRoom(id, { name: (name || '').trim() || 'Room' });
+  renderHomeMap(); renderCare();
+}
+export function setRoomLight(id, v){
+  patchRoom(id, { light: Math.max(0, Math.min(5, parseInt(v, 10) || 0)) });
+  renderHomeMap(); renderCare();
+}
+export function setRoomFloor(id, v){ patchRoom(id, { floor: v }); renderHomeMap(); }
+export function setRoomOutdoor(id, on){ patchRoom(id, { outdoor: !!on }); renderHomeMap(); renderCare(); }
+export function wallWindow(id, wall){ toggleWindow(id, wall); renderHomeMap(); renderCare(); }
+export function wallDoor(id, wall){ toggleDoor(id, wall); renderHomeMap(); }
+export function wallSun(id, wall){ cycleWindowSun(id, wall); renderHomeMap(); renderCare(); }
+
+/* --- drag a room body to move it, or its corner handle to resize --- */
+let roomDrag = null;
+export function roomDragStart(e, id, mode){
+  if (!UI.build) return false;
+  const svg = $('mapsvg'); if (!svg) return false;
+  const r = DB.roomById[id]; if (!r) return false;
+  const p = toSvg(svg, e.clientX, e.clientY);
+  roomDrag = { id, mode, svg, startX:p.x, startY:p.y,
+               orig:{ x:r.x, y:r.y, w:r.w, h:r.h }, moved:false };
+  UI.selRoom = id;
+  return true;
+}
+export function roomDragMove(e){
+  if (!roomDrag) return;
+  const T = DB.home.grid.tile;
+  const p = toSvg(roomDrag.svg, e.clientX, e.clientY);
+  const dx = (p.x - roomDrag.startX) / T, dy = (p.y - roomDrag.startY) / T;
+  if (!roomDrag.moved && Math.abs(dx) < 0.4 && Math.abs(dy) < 0.4) return;
+  roomDrag.moved = true;
+  const o = roomDrag.orig;
+  const next = roomDrag.mode === 'resize'
+    ? clampRect({ x:o.x, y:o.y, w:o.w + dx, h:o.h + dy })
+    : clampRect({ x:o.x + dx, y:o.y + dy, w:o.w, h:o.h });
+  const cur = DB.roomById[roomDrag.id];
+  if (cur.x !== next.x || cur.y !== next.y || cur.w !== next.w || cur.h !== next.h){
+    patchRoom(roomDrag.id, next);
+    renderHomeMap();
+  }
+}
+export function roomDragEnd(){
+  if (!roomDrag) return;
+  const d = roomDrag; roomDrag = null;
+  if (d.moved){ renderCare(); toast('Room updated'); } else { renderHomeMap(); }
+}
+export function roomDragging(){ return !!roomDrag; }
+
 export function toggleArrange(){
   UI.arrange = !UI.arrange;
   renderHomeMap();
@@ -177,8 +277,9 @@ export function resetApartment(){
   const n = Object.keys(j.rooms || {}).length;
   if (!n){ toast('Nothing to reset — this is the shipped apartment'); return; }
   j.rooms = {}; saveJournal(j);
+  applyRooms();          // rebuild DB.home.rooms, or the map keeps the edits
   toast(`🏗️ Apartment reset — ${n} room edit${n>1?'s':''} discarded`);
-  renderHomeMap();
+  renderHomeMap(); renderCare();
 }
 
 /* Escape hatch for the localStorage overlay: hand back a file you can fold
@@ -215,6 +316,52 @@ function toSvg(svg, cx, cy){
   const m = svg.getScreenCTM(); if (!m) return { x:0, y:0 };
   return pt.matrixTransform(m.inverse());
 }
+
+/* --- dragging OUT of the tray and onto the map ---------------------------
+   The counterpart to dropping a pot on the tray. Without it an unplaced plant
+   could only be re-placed from the modal, which strands anything you lift off.
+   The tray item is HTML, not SVG, so this tracks the pointer directly and
+   resolves the drop against the map on release. */
+let trayDrag = null;
+
+export function trayDragStart(e, el){
+  if (!UI.arrange) return false;
+  trayDrag = { id: el.dataset.tray, el, moved:false, sx:e.clientX, sy:e.clientY };
+  el.classList.add('dragging');
+  try { el.setPointerCapture(e.pointerId); } catch (err) {}
+  return true;
+}
+export function trayDragMove(e){
+  if (!trayDrag) return;
+  if (!trayDrag.moved && Math.hypot(e.clientX-trayDrag.sx, e.clientY-trayDrag.sy) < DRAG_MIN) return;
+  trayDrag.moved = true;
+  const svg = $('mapsvg'); if (!svg) return;
+  const p = toSvg(svg, e.clientX, e.clientY);
+  const over = roomAt(p.x, p.y);
+  svg.querySelectorAll('.droptarget').forEach(t => t.classList.toggle('over', t.dataset.room === over));
+  const near = slotAt(p.x, p.y);
+  svg.querySelectorAll('.slotdot').forEach(d => d.classList.toggle('near',
+    !!near && d.dataset.room === near.room && d.dataset.wall === near.wall && +d.dataset.slot === near.slot));
+}
+export function trayDragEnd(e){
+  if (!trayDrag) return;
+  const d = trayDrag; trayDrag = null;
+  d.el.classList.remove('dragging');
+  try { d.el.releasePointerCapture(e.pointerId); } catch (err) {}
+  if (!d.moved){ openModal(d.id); return; }        // a tap still opens the card
+
+  const svg = $('mapsvg');
+  const overMap = svg && document.elementFromPoint(e.clientX, e.clientY)?.closest('#mapframe');
+  if (!svg || !overMap){ renderHomeMap(); return; }
+
+  const p = toSvg(svg, e.clientX, e.clientY);
+  const slot = slotAt(p.x, p.y);
+  if (slot){ placeInSlot(d.id, slot); return; }
+  const target = roomAt(p.x, p.y);
+  if (!target){ toast('🚫 Drop it inside a room'); renderHomeMap(); return; }
+  moveTo(d.id, target);
+}
+export function trayDragging(){ return !!trayDrag; }
 
 export function dragStart(e, g){
   if (!UI.arrange) return false;

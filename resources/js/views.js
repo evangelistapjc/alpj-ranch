@@ -10,6 +10,7 @@ import { DB, UI, fmtDate, isoDay, relDay, nextCheck, daysUntil, interval,
 import { assess, bestRooms, diagnose, sunToday, VERDICT, roomRanges } from './climate.js';
 import { wxLog, recentDryFactor, wateringWindow } from './weather.js';
 import { ZONE, STAGE, TABS, GROUPINGS, MAP_THEME, WMO, SLOTS_PER_WALL, WALLS } from './config.js';
+import { wallIsExterior, hasWindow, hasDoor, roomsEdited } from './rooms.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -179,14 +180,25 @@ export function renderGrove(){
   if (UI.group === 'none'){ grove.innerHTML = `<div class="plot">${DB.plants.map(cardHTML).join('')}</div>`; return; }
   const G = GROUPINGS[UI.group];
   // Room grouping reads through the placement overlay, so a plant dragged on
-  // the map regroups here immediately.
-  const of = UI.group === 'room' ? loc : G.of;
-  let keys = G.order.length ? G.order.slice() : [...new Set(DB.plants.map(of))];
-  [...new Set(DB.plants.map(of))].forEach(k => { if (!keys.includes(k)) keys.push(k); });
+  // the map regroups here immediately. Unplaced plants (room === null) get a
+  // real bucket instead of a group literally titled "null", and rooms follow
+  // the map's own order so the two views read the same way.
+  const UNPLACED = '__unplaced__';
+  const of = UI.group === 'room' ? (p => loc(p) || UNPLACED) : G.of;
+  let keys;
+  if (UI.group === 'room'){
+    keys = (DB.home.rooms || []).map(r => r.id);
+    if (DB.plants.some(p => !loc(p))) keys.push(UNPLACED);
+  } else {
+    keys = G.order.length ? G.order.slice() : [...new Set(DB.plants.map(of))];
+    [...new Set(DB.plants.map(of))].forEach(k => { if (!keys.includes(k)) keys.push(k); });
+  }
   grove.innerHTML = keys.map(k => {
     const members = DB.plants.filter(p => of(p) === k);
     if (!members.length) return '';
     let m = G.meta && G.meta[k];
+    if (!m && k === UNPLACED) m = { emoji:'🪴', title:'Not placed yet',
+                                    note:'drag these onto the map from The Plot' };
     if (!m && UI.group === 'room'){ const r = DB.roomById[k]; m = { emoji:'🏠', title:r?r.name:k, note:r?r.note:'' }; }
     m = m || { emoji:'🏠', title:k, note:'' };
     return `<div class="group"><div class="group-head"><span class="g-emoji">${m.emoji}</span><span class="g-title">${m.title}</span>${m.note?`<span class="g-note">${m.note}</span>`:''}</div><div class="plot">${members.map(cardHTML).join('')}</div></div>`;
@@ -441,9 +453,12 @@ export function roomAt(x, y){
 function curTheme(){ return document.documentElement.getAttribute('data-theme') || 'stardew'; }
 
 function renderMapTools(){
-  const moved = movedPlants().length;
+  const moved = movedPlants().length, edits = roomsEdited();
   $('maptools').innerHTML = `
     <button class="${UI.arrange?'sky':'ghost'}" data-action="arrange">${UI.arrange?'✓ Done arranging':'✋ Arrange plants'}</button>
+    <button class="${UI.build?'sky':'ghost'}" data-action="build">${UI.build?'✓ Done building':'🏗️ Edit rooms'}</button>
+    ${UI.build?'<button class="ghost" data-action="addroom">➕ Add room</button>':''}
+    ${edits?`<span class="moved-count">${edits} room edit${edits>1?'s':''}</span>`:''}
     ${UI.arrange?`<button class="ghost" data-action="resetlayout">↩️ Reset plants</button>
       <button class="ghost" data-action="resetapartment">🏗️ Reset apartment</button>
       <button class="ghost" data-action="exporthome">⬇️ Export placement</button>`:''}
@@ -454,8 +469,48 @@ function renderMapTools(){
 /* Side tray: every plant, placed ones dimmed, unplaced ones full-colour and
    asking for a home. Doubles as a drop target — dropping a pot here lifts it
    off the map without deleting anything. */
+export function renderRoomPanel(){
+  const el = $('planttray'); if (!el) return;
+  const r = DB.roomById[UI.selRoom];
+  if (!r){
+    el.classList.remove('arranging-tray');
+    el.innerHTML = `<div class="tray-head pixel">🏗️ Rooms</div>
+      <div class="tray-note">Tap a room on the map to edit it, or ➕ Add room.</div>
+      <div class="tray-list">${(DB.home.rooms||[]).map(x =>
+        `<div class="tray-item placed" data-action="selroom" data-room="${x.id}" role="button" tabindex="0">
+          <span class="tray-sprite">${x.outdoor?'🌳':'🏠'}</span>
+          <div class="tray-main"><div class="tray-name">${x.name}</div>
+          <div class="tray-sub">${x.w}×${x.h} · light ${x.light}</div></div></div>`).join('')}</div>`;
+    return;
+  }
+  const walls = WALLS.map(wl => {
+    const ext = wallIsExterior(r, wl);
+    return `<div class="wallrow"><b>${wl}</b><span class="wtag">${ext?'exterior':'interior'}</span>
+      <button class="ghost tiny" data-action="togglewin" data-room="${r.id}" data-wall="${wl}">${hasWindow(r,wl)?'🪟 remove':'🪟 window'}</button>
+      <button class="ghost tiny" data-action="toggledoor" data-room="${r.id}" data-wall="${wl}">${hasDoor(r,wl)?'🚪 remove':'🚪 door'}</button>
+      ${hasWindow(r,wl)?`<button class="ghost tiny" data-action="winsun" data-room="${r.id}" data-wall="${wl}">${(r.windows.find(w=>w.edge===wl)||{}).direct?'☀️ direct':'🌤️ indirect'}</button>`:''}
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="tray-head pixel">🏗️ ${r.name}</div>
+    <div class="tray-note">Drag the room to move · corner handle to resize</div>
+    <div class="roomform">
+      <label>Name<input id="rmName" type="text" value="${r.name.replace(/"/g,'&quot;')}" data-roomname="${r.id}"></label>
+      <label>Light 0–5<input id="rmLight" type="number" min="0" max="5" value="${r.light||0}" data-roomlight="${r.id}"></label>
+      <label>Floor<select id="rmFloor" data-roomfloor="${r.id}">
+        ${['wood','carpet','tile','grass'].map(f=>`<option value="${f}" ${r.floor===f?'selected':''}>${f}</option>`).join('')}
+      </select></label>
+      <label class="chk"><input type="checkbox" id="rmOutdoor" data-roomoutdoor="${r.id}" ${r.outdoor?'checked':''}> Outdoor</label>
+      <div class="wallset">${walls}</div>
+      <div class="roomacts">
+        <button class="ghost" data-action="deselroom">Done</button>
+        <button class="danger" data-action="delroom" data-room="${r.id}">🗑️ Delete room</button>
+      </div>
+    </div>`;
+}
+
 export function renderTray(){
   const el = $('planttray'); if (!el) return;
+  if (UI.build) return renderRoomPanel();
   const un = unplacedPlants();
   const rows = DB.plants.map(p => {
     const r = room(p), placed = !!r;
@@ -472,10 +527,11 @@ export function renderTray(){
       </div>
     </div>`;
   }).join('');
+  el.classList.toggle('arranging-tray', !!UI.arrange);
   el.innerHTML = `<div class="tray-head pixel">🪴 The Plot</div>
     <div class="tray-note">${un.length ? `${un.length} waiting for a spot` : 'everyone has a home'}</div>
     <div class="tray-list">${rows}</div>
-    ${UI.arrange ? '<div class="tray-drop">drop a pot here to lift it off the map</div>' : ''}`;
+    ${UI.arrange ? '<div class="tray-drop">drag a plant onto the map to place it · drop a pot here to lift it off</div>' : ''}`;
 }
 
 export function renderHomeMap(){
@@ -485,7 +541,7 @@ export function renderHomeMap(){
   const FLOOR = { wood:TH.wood, carpet:TH.carpet, tile:TH.tile, grass:TH.grass };
   const PLANK = { wood:TH.plankW, carpet:TH.plankC, tile:TH.plankT, grass:TH.plankG };
   const T = DB.home.grid.tile, W = DB.home.grid.cols*T, H = DB.home.grid.rows*T;
-  let defs='', floors='', walls='', wins='', glows='', labels='', plants='', drops='', slots='';
+  let defs='', floors='', walls='', wins='', glows='', labels='', plants='', drops='', slots='', build='';
   floors += `<rect x="0" y="0" width="${W}" height="${H}" fill="${TH.hall}"/><rect x="0" y="0" width="${W}" height="${H}" fill="url(#hall)"/>`;
   defs += `<pattern id="hall" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${TH.hall}"/><rect width="16" height="2" fill="${TH.hall2}"/></pattern>`;
   (DB.home.rooms || []).forEach(r => {
@@ -526,6 +582,26 @@ export function renderHomeMap(){
     labels += `<text x="${x+8}" y="${y+16}" font-family="'Pixelify Sans',monospace" font-size="12" font-weight="700" fill="${dim?'#f4ead9':'#3a2413'}" style="paint-order:stroke;stroke:${dim?'rgba(0,0,0,.5)':'rgba(255,255,255,.35)'};stroke-width:2px">${r.name}</text>`;
     labels += `<text x="${x+w-6}" y="${y+16}" text-anchor="end" font-size="9">${r.outdoor?'🌳':(r.light>0?'☀️'.repeat(r.light):'🌑')}</text>`;
     // placement reads through the overlay, so dragged plants land in the new room
+    if (UI.build){
+      const sel = UI.selRoom === r.id;
+      build += `<rect class="roomhit ${sel?'sel':''}" data-roomhit="${r.id}" x="${x}" y="${y}" width="${w}" height="${h}" fill="transparent"/>`;
+      if (sel){
+        build += `<rect class="roomsel" x="${x+2}" y="${y+2}" width="${w-4}" height="${h-4}" rx="3"/>`;
+        // corner handle resizes; the room body itself moves
+        build += `<rect class="roomresize" data-resize="${r.id}" x="${x+w-13}" y="${y+h-13}" width="13" height="13" rx="2"/>`;
+        // one control per wall: click toggles a window (exterior) or door (interior)
+        WALLS.forEach(wl => {
+          let cx, cy;
+          if (wl==='top'){ cx=x+w/2; cy=y+9; } else if (wl==='bottom'){ cx=x+w/2; cy=y+h-9; }
+          else if (wl==='left'){ cx=x+9; cy=y+h/2; } else { cx=x+w-9; cy=y+h/2; }
+          const ext = wallIsExterior(r, wl), win = hasWindow(r, wl), door = hasDoor(r, wl);
+          const glyph = win ? '🪟' : door ? '🚪' : (ext ? '+' : '·');
+          build += `<g class="wallbtn ${ext?'ext':'int'} ${win||door?'on':''}" data-wall="${wl}" data-wallroom="${r.id}">
+            <circle cx="${cx}" cy="${cy}" r="8"/>
+            <text x="${cx}" y="${cy+3.5}" text-anchor="middle" font-size="9">${glyph}</text></g>`;
+        });
+      }
+    }
     const rect = { id:r.id, x, y, w, h };
     const here = plantsIn(r.id);
     const auto = here.filter(p => placement(p).wall == null);
@@ -553,7 +629,7 @@ export function renderHomeMap(){
       });
     }
   });
-  const svg = `<svg id="mapsvg" class="${UI.arrange?'arranging':''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Apartment map"><defs>${defs}</defs>${floors}${glows}${walls}${wins}${labels}${drops}${slots}${plants}</svg>`;
+  const svg = `<svg id="mapsvg" class="${UI.arrange?'arranging':''} ${UI.build?'building':''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Apartment map"><defs>${defs}</defs>${floors}${glows}${walls}${wins}${labels}${drops}${slots}${plants}${build}</svg>`;
   const mf = $('mapframe'); mf.style.background = `linear-gradient(${TH.frameA},${TH.frameB})`; mf.innerHTML = svg;
   $('maplegend').innerHTML = `<span>☀️ <b>light</b> (1–5)</span><span>☀️ next to a window = <b>direct sun</b></span><span><b>⚡</b> grow light</span><span>⚠️ <b>poor fit</b> for that spot</span><span>🌑 no light</span><span>${UI.arrange?'<b>Drag</b> a pot to move it':'Tap a plant to open its card'}</span>`;
 }

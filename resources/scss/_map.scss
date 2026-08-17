@@ -114,3 +114,40 @@ svg.arranging {
 }
 svg.arranging .slotdot { opacity:.75; }
 svg.arranging .slotdot.near { opacity:1; fill:rgba(255,241,190,.85); r:9; }
+
+/* tray items are draggable onto the map while arranging */
+svg.arranging ~ * .tray-item, .planttray .tray-item { }
+.maprow .planttray .tray-item.dragging { opacity:.6; transform:scale(.97); }
+.arranging-tray .tray-item { cursor:grab; touch-action:none; }
+
+/* --- room builder --- */
+.roomhit { cursor:move; }
+.roomsel { fill:none; stroke:#ffd35c; stroke-width:3; stroke-dasharray:6 4; pointer-events:none; }
+.roomresize { fill:#ffd35c; stroke:#7a5a10; stroke-width:1.5; cursor:nwse-resize; }
+.wallbtn {
+  cursor:pointer;
+  circle { fill:rgba(20,14,7,.7); stroke:#ffeaa0; stroke-width:1.5; }
+  text { fill:#fff5df; pointer-events:none; }
+  &.int circle { stroke:#9fb3c8; stroke-dasharray:2 2; }
+  &.on circle { fill:rgba(255,211,92,.85); }
+  &:hover circle { fill:rgba(255,211,92,.6); }
+}
+svg.building .plant-g { pointer-events:none; opacity:.55; }
+.roomform {
+  display:flex; flex-direction:column; gap:7px; font-size:11.5px;
+  label { display:flex; flex-direction:column; gap:2px; font-weight:800; color:var(--ink-soft); }
+  label.chk { flex-direction:row; align-items:center; gap:6px; }
+  input[type="text"], input[type="number"], select {
+    font-family:'Nunito',sans-serif; font-size:12px; padding:4px 6px;
+    border:2px solid var(--wood-d); border-radius:6px; background:#fff; color:var(--ink);
+  }
+}
+.wallset { display:flex; flex-direction:column; gap:5px; margin-top:4px; }
+.wallrow {
+  display:flex; gap:4px; align-items:center; flex-wrap:wrap; font-size:10.5px;
+  background:#fff8e6; border:2px solid var(--wood); border-radius:6px; padding:4px 6px;
+  b { text-transform:capitalize; }
+  .wtag { font-size:9.5px; color:var(--ink-soft); }
+}
+.roomacts { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+button.danger { background:var(--clay); border-color:#8f3a22; box-shadow:0 2px 0 #8f3a22; color:#fff; }
