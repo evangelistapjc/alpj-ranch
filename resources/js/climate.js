@@ -8,7 +8,7 @@
 // from plants/*.json → needs. Outdoor rooms marked `tracksWeather` substitute
 // live Open-Meteo readings for their static range.
 // ===========================================================================
-import { DB, room, loc, effInterval, interval } from './state.js';
+import { DB, room, loc, effInterval, interval, potMates } from './state.js';
 import { LIGHT_FIT } from './config.js';
 import { sunOnRoom, seasonalSun } from './sun.js';
 
@@ -189,6 +189,23 @@ export function diagnose(p, r){
       why:`${R.humidityPct[0]}–${R.humidityPct[1]}% RH here against the ${want ? want[0]+'–'+want[1] : '—'}% it prefers.`,
       fix: dry ? 'Group it with other plants or stand the pot on a pebble tray. Misting does almost nothing.'
                : 'Improve airflow and let the soil dry further between waterings; watch for fungus gnats.' });
+  }
+
+  // --- shared pot: the most common way a two-plant container kills one of them
+  const mates = potMates(p).filter(q => q.id !== p.id);
+  if (mates.length){
+    const worst = mates.reduce((acc, q) =>
+      Math.abs(interval(q) - interval(p)) > Math.abs(interval(acc) - interval(p)) ? q : acc, mates[0]);
+    const gap = Math.abs(interval(worst) - interval(p));
+    if (gap >= 5){
+      const thirsty = interval(p) < interval(worst) ? p : worst;
+      const dry = thirsty === p ? worst : p;
+      issues.push({ key:'pot-conflict', sev:'high', title:'Potmates want different watering',
+        why:`${p.name} wants water every ~${interval(p)}d but ${worst.name} wants ~${interval(worst)}d, `
+          + `and they share one root zone.`,
+        fix:`Water on ${dry.name}'s slower schedule so the shared soil dries out, and spot-water `
+          + `${thirsty.name} at the surface between times. Long term, separate them at the next repot.` });
+    }
   }
 
   const ranked = bestRooms(p);

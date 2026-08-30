@@ -10,8 +10,10 @@
     "plants/philodendron-brasil.json",
     "plants/rubber-plant.json",
     "plants/money-tree.json",
-    "plants/monstera-new.json"
+    "plants/monstera-new.json",
+    "plants/heartleaf-philodendron.json",
+    "plants/snake-plant.json"
   ],
   "almanac": "almanac.json",
-  "count": 10
+  "count": 12
 }

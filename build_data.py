@@ -361,6 +361,69 @@ P.append({
     "sources": [{"label": "The Spruce", "url": "https://www.thespruce.com/monstera-plant-profile-5072671"}],
 })
 
+# --- Two plants sharing ONE pot -------------------------------------------
+# `pot` groups plants that live in the same container. They move together on
+# the map and occupy a single slot; the app warns when potmates disagree about
+# water, which these two very much do.
+P.append({
+    "id": "HLP", "name": "Heart Leaf Philodendron",
+    "botanical": "Philodendron hederaceum",
+    "sprite": "\U0001f49a", "location": "bedroom", "pot": "duo-1",
+    "zone": "medium", "stage": "growing", "difficulty": "easy",
+    "medium": "soil", "currentStatus": "Sharing a pot with the snake plant \u2014 watch the water balance",
+    "growLight": False, "waterDays": 10, "waterBucket": "regular",
+    "needs": {"tempF": [65, 80], "humidityPct": [40, 60], "draftSensitive": False},
+    "headline": "The plain green form of the same species as your Brasil \u2014 and the more forgiving of the two.",
+    "water": "Top 1\u20132\" dry, then water thoroughly (~10 days). NOTE: it shares a pot with a snake plant, "
+             "which wants to dry out far harder. Water to the SNAKE PLANT's schedule and mist/spot-water this one, "
+             "or the shared root zone stays wet and the snake plant rots.",
+    "light": "Medium to bright indirect. Tolerates lower light better than almost anything else you own, "
+             "but gets leggy with big gaps between leaves if it is too dim.",
+    "soil": "Aroid mix \u2014 potting soil + perlite + bark. In a shared pot, err chunkier for the snake plant's sake.",
+    "temp": "65\u201380\u00b0F.", "humidity": "Average room humidity is fine.",
+    "fertilizer": "Balanced, monthly spring\u2013summer. Feed on the lighter side in a shared pot.",
+    "repot": "Every 1\u20132 yrs \u2014 and this is the moment to separate the two if you want them on their own schedules.",
+    "propagate": "Very easy. Cut below a node, root in water or straight into soil.",
+    "tips": ["Same species as your Brasil, just without the variegation \u2014 care is identical.",
+             "Pinch the vines back to keep it full instead of stringy.",
+             "The aerial nubs along the stem are where roots form; bury one to encourage rooting.",
+             "Sap is a mild irritant \u2014 wash hands after pruning."],
+    "issues": [{"sign": "Long bare stretches between leaves", "fix": "Too little light; move brighter and pinch back."},
+               {"sign": "Yellow lower leaves", "fix": "Overwatering \u2014 very likely in a pot shared with a snake plant."},
+               {"sign": "Brown crispy tips", "fix": "Dry air or letting it go bone dry too long."}],
+    "sources": [{"label": "The Spruce", "url": "https://www.thespruce.com/grow-heartleaf-philodendron-5077387"},
+                {"label": "Missouri Botanical Garden", "url": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=281575"}],
+})
+
+P.append({
+    "id": "SNK", "name": "Snake Plant", "botanical": "Dracaena trifasciata \u00b7 2 leaves + 1 pup",
+    "sprite": "\U0001f33f", "location": "bedroom", "pot": "duo-1",
+    "zone": "low", "stage": "growing", "difficulty": "easy",
+    "medium": "soil", "currentStatus": "Two tall leaves, one pushing a pup \u2014 a good sign it is happy",
+    "growLight": False, "waterDays": 21, "waterBucket": "sip",
+    "needs": {"tempF": [60, 85], "humidityPct": [20, 50], "draftSensitive": False},
+    "headline": "Nearly unkillable except by water. A pup means the roots are established and content.",
+    "water": "Soak, then let it dry out COMPLETELY \u2014 3 weeks or more when cool. It stores water in the leaves "
+             "and rots from the base if kept damp. This is the schedule the shared pot should follow.",
+    "light": "Takes anything from low light to bright indirect. More light means faster growth and firmer, "
+             "more upright leaves; deep shade makes them floppy and prone to leaning.",
+    "soil": "Gritty and fast-draining \u2014 cactus/succulent mix, or potting soil cut heavily with perlite or pumice.",
+    "temp": "60\u201385\u00b0F. Keep above 50\u00b0F.",
+    "humidity": "Low. Dry air is genuinely fine.",
+    "fertilizer": "Barely needed. Half-strength twice over the whole growing season is plenty.",
+    "repot": "Rarely \u2014 it flowers and pups better when snug. Repot when it splits the pot or you want to divide.",
+    "propagate": "The pup is the easy route: wait until it is ~1/3 the parent's height, then cut the rhizome with roots "
+                 "attached. Leaf cuttings also root, but variegated forms revert to plain green from a leaf.",
+    "tips": ["Floppy or leaning leaves mean too little light or too much water \u2014 usually both.",
+             "The pup is a compliment; leave it attached until it is well grown.",
+             "When in doubt, do not water. This plant dies of kindness."],
+    "issues": [{"sign": "Leaves falling outward from the base", "fix": "Overwatering or too little light; also stake/support."},
+               {"sign": "Mushy, dark leaf bases", "fix": "Root rot. Unpot, cut away rot, repot dry and grittier."},
+               {"sign": "Wrinkled, curling leaves", "fix": "Actually underwatered \u2014 rare, but it happens."}],
+    "sources": [{"label": "Missouri Botanical Garden", "url": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=287112"},
+                {"label": "The Spruce", "url": "https://www.thespruce.com/grow-snake-plants-1902772"}],
+})
+
 # drop guards / skips, keep order
 P = [p for p in P if not p.get("skip")]
 
@@ -371,6 +434,8 @@ def slug(p):
         "TRA": "tradescantia", "MON": "monstera", "SNO": "snow-queen-pothos",
         "BRA": "philodendron-brasil", "RUB": "rubber-plant", "MNY": "money-tree",
         "MO2": "monstera-new",
+        "HLP": "heartleaf-philodendron",
+        "SNK": "snake-plant",
     }[p["id"]]
 
 # Point every plant at its SVG in icons/plant-sprites/. The emoji stays as a

@@ -1,0 +1,32 @@
+{
+  "name": "alpj-ranch",
+  "version": "5.1.0",
+  "private": true,
+  "description": "Offline-capable plant-care dashboard for a low-light San Jose apartment.",
+  "homepage": "https://evangelistapjc.github.io/alpj-ranch/",
+  "scripts": {
+    "build": "npm run build:data && npm run build:sprites && npm run build:css && npm run build:sw",
+    "build:data": "python build_data.py",
+    "build:sprites": "python build_sprites.py",
+    "build:css": "sass resources/scss/main.scss resources/css/stylesheet.css --style=compressed --no-source-map",
+    "build:css:py": "python build_css.py",
+    "build:sw": "python build_sw.py",
+
+    "serve": "python -m http.server 8000",
+    "dev": "npm run build && npm run serve",
+
+    "bump": "python build_sw.py --bump patch",
+    "bump:minor": "python build_sw.py --bump minor",
+    "bump:major": "python build_sw.py --bump major",
+    "release": "npm run build:data && npm run build:sprites && npm run build:css && npm run bump",
+
+    "check": "python build_sw.py --check",
+    "verify": "npm run build && npm run check"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

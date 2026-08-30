@@ -8,7 +8,7 @@ import { DB, UI, Store, today0, day0, isoDay, parseDayInput, isSameDay,
          loc, room, movedPlants, setPlacement,
          exportJournal, parseImport, mergeIntoStored, loadJournal,
          saveJournal, swapPlacement, plantsIn, unplacedPlants,
-         placement } from './state.js';
+         placement, potMates, sharesPot } from './state.js';
 import { renderCare, renderGrove, renderHomeMap, renderWeather, renderAlmanac,
          renderModalTabs, renderModalBody, logHTML, roomAt, slotAt,
          renderTray, sprite as spriteFor } from './views.js';
@@ -125,7 +125,8 @@ export function moveTo(id, roomId){
   if (!wasUnplaced && loc(p) === roomId){
     toast(`${p.name} is already in ${DB.roomById[roomId].name}`); return;
   }
-  setPlacement(id, { room: roomId, wall:null, slot:null, order:null });
+  // a shared pot is one object — everything in it travels together
+  potMates(p).forEach(q => setPlacement(q.id, { room: roomId, wall:null, slot:null, order:null }));
   const a = assess(p), r = DB.roomById[roomId];
   toast(`${VERDICT[a.overall][0]} ${p.name} → ${r.name} · ${VERDICT[a.overall][1].toLowerCase()} · check ~every ${a.water.eff}d`);
   refresh(id);
@@ -325,7 +326,8 @@ function toSvg(svg, cx, cy){
 let trayDrag = null;
 
 export function trayDragStart(e, el){
-  if (!UI.arrange) return false;
+  if (UI.build) return false;                   // room editing owns drags
+  if (!UI.arrange){ UI.arrange = true; renderHomeMap(); }   // turn it on for them
   trayDrag = { id: el.dataset.tray, el, moved:false, sx:e.clientX, sy:e.clientY };
   el.classList.add('dragging');
   try { el.setPointerCapture(e.pointerId); } catch (err) {}
@@ -433,13 +435,15 @@ export function placeInSlot(id, slot){
   const p = plant(id);
   // One plant per slot. If someone already has it, the two trade places —
   // which is also the natural way to reorder pots along a wall.
+  const mates = new Set(potMates(p).map(q => q.id));
   const taken = DB.plants.find(q => {
-    if (q.id === id) return false;
+    if (mates.has(q.id)) return false;          // sharing a pot is not a collision
     const pl = placement(q);
     return pl.room === slot.room && pl.wall === slot.wall && pl.slot === slot.slot;
   });
   if (taken){ swapWith(id, taken.id); return; }
-  setPlacement(id, { room:slot.room, wall:slot.wall, slot:slot.slot, order:null });
+  potMates(p).forEach(q =>
+    setPlacement(q.id, { room:slot.room, wall:slot.wall, slot:slot.slot, order:null }));
   const r = DB.roomById[slot.room], a = assess(p);
   toast(`${VERDICT[a.overall][0]} ${p.name} → ${r.name}, ${WALL_LABEL[slot.wall]} wall #${slot.slot+1}`);
   refresh(id);
@@ -452,7 +456,7 @@ export function swapWith(idA, idB){
 }
 export function unplace(id){
   const p = plant(id);
-  setPlacement(id, { room:null, wall:null, slot:null, order:null });
+  potMates(p).forEach(q => setPlacement(q.id, { room:null, wall:null, slot:null, order:null }));
   toast(`🪴 ${p.name} lifted off the map — it's in the tray`);
   refresh(id);
 }

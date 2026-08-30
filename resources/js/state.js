@@ -142,6 +142,26 @@ export function swapPlacement(idA, idB){
   setPlacement(idB, { room:pa.room, wall:pa.wall, slot:pa.slot, order:pa.order });
 }
 
+/* ---------------- shared pots ----------------
+   Two plants in one container are one physical object: they move together,
+   occupy one slot, and share a root zone. `pot` on the plant record groups
+   them; a plant with no `pot` is its own pot. */
+export function potId(p){ return p.pot || ('solo:' + p.id); }
+export function potMates(p){ return DB.plants.filter(q => potId(q) === potId(p)); }
+export function sharesPot(p){ return potMates(p).length > 1; }
+
+/* The plants standing in a room, collapsed to one entry per pot. */
+export function potsIn(roomId){
+  const seen = new Set(), out = [];
+  plantsIn(roomId).forEach(p => {
+    const k = potId(p);
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ key:k, lead:p, members:potMates(p).filter(q => loc(q) === roomId) });
+  });
+  return out;
+}
+
 export function status(p){ const v = lwwValue(ps(p.id).status); return v || p.currentStatus; }
 export function setStatus(id, txt){ editPlant(id, s => { s.status = lww(txt); }); }
 

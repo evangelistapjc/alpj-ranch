@@ -1,0 +1,66 @@
+{
+  "id": "SNK",
+  "name": "Snake Plant",
+  "botanical": "Dracaena trifasciata · 2 leaves + 1 pup",
+  "sprite": "🌿",
+  "location": "bedroom",
+  "pot": "duo-1",
+  "zone": "low",
+  "stage": "growing",
+  "difficulty": "easy",
+  "medium": "soil",
+  "currentStatus": "Two tall leaves, one pushing a pup — a good sign it is happy",
+  "growLight": false,
+  "waterDays": 21,
+  "waterBucket": "sip",
+  "needs": {
+    "tempF": [
+      60,
+      85
+    ],
+    "humidityPct": [
+      20,
+      50
+    ],
+    "draftSensitive": false
+  },
+  "headline": "Nearly unkillable except by water. A pup means the roots are established and content.",
+  "water": "Soak, then let it dry out COMPLETELY — 3 weeks or more when cool. It stores water in the leaves and rots from the base if kept damp. This is the schedule the shared pot should follow.",
+  "light": "Takes anything from low light to bright indirect. More light means faster growth and firmer, more upright leaves; deep shade makes them floppy and prone to leaning.",
+  "soil": "Gritty and fast-draining — cactus/succulent mix, or potting soil cut heavily with perlite or pumice.",
+  "temp": "60–85°F. Keep above 50°F.",
+  "humidity": "Low. Dry air is genuinely fine.",
+  "fertilizer": "Barely needed. Half-strength twice over the whole growing season is plenty.",
+  "repot": "Rarely — it flowers and pups better when snug. Repot when it splits the pot or you want to divide.",
+  "propagate": "The pup is the easy route: wait until it is ~1/3 the parent's height, then cut the rhizome with roots attached. Leaf cuttings also root, but variegated forms revert to plain green from a leaf.",
+  "tips": [
+    "Floppy or leaning leaves mean too little light or too much water — usually both.",
+    "The pup is a compliment; leave it attached until it is well grown.",
+    "When in doubt, do not water. This plant dies of kindness."
+  ],
+  "issues": [
+    {
+      "sign": "Leaves falling outward from the base",
+      "fix": "Overwatering or too little light; also stake/support."
+    },
+    {
+      "sign": "Mushy, dark leaf bases",
+      "fix": "Root rot. Unpot, cut away rot, repot dry and grittier."
+    },
+    {
+      "sign": "Wrinkled, curling leaves",
+      "fix": "Actually underwatered — rare, but it happens."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Missouri Botanical Garden",
+      "url": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=287112"
+    },
+    {
+      "label": "The Spruce",
+      "url": "https://www.thespruce.com/grow-snake-plants-1902772"
+    }
+  ],
+  "spriteFile": "resources/icons/plant-sprites/snake-plant.svg"
+}

@@ -45,6 +45,24 @@ def write_version(v, data):
     with open(VERSION_FILE, "w", encoding="utf-8", newline="\n") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
+    sync_package_json(v)
+
+
+def sync_package_json(v):
+    """version.json is the single source of truth; package.json follows it.
+
+    Two files holding a version number is two files that drift. Rather than ask
+    you to remember both, a bump rewrites package.json's version field too --
+    edited as text so the key order and formatting survive."""
+    pkg = os.path.join(BASE, "package.json")
+    if not os.path.isfile(pkg):
+        return
+    src = open(pkg, encoding="utf-8").read()
+    out = re.sub(r'("version"\s*:\s*")[^"]*(")', r"\g<1>%s\g<2>" % v, src, count=1)
+    if out != src:
+        with open(pkg, "w", encoding="utf-8", newline="\n") as f:
+            f.write(out)
+        print("package.json version -> %s" % v)
 
 
 def bump(v, part):
