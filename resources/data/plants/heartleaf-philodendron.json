@@ -1,0 +1,67 @@
+{
+  "id": "HLP",
+  "name": "Heart Leaf Philodendron",
+  "botanical": "Philodendron hederaceum",
+  "sprite": "💚",
+  "location": "bedroom",
+  "pot": "duo-1",
+  "zone": "medium",
+  "stage": "growing",
+  "difficulty": "easy",
+  "medium": "soil",
+  "currentStatus": "Sharing a pot with the snake plant — watch the water balance",
+  "growLight": false,
+  "waterDays": 10,
+  "waterBucket": "regular",
+  "needs": {
+    "tempF": [
+      65,
+      80
+    ],
+    "humidityPct": [
+      40,
+      60
+    ],
+    "draftSensitive": false
+  },
+  "headline": "The plain green form of the same species as your Brasil — and the more forgiving of the two.",
+  "water": "Top 1–2\" dry, then water thoroughly (~10 days). NOTE: it shares a pot with a snake plant, which wants to dry out far harder. Water to the SNAKE PLANT's schedule and mist/spot-water this one, or the shared root zone stays wet and the snake plant rots.",
+  "light": "Medium to bright indirect. Tolerates lower light better than almost anything else you own, but gets leggy with big gaps between leaves if it is too dim.",
+  "soil": "Aroid mix — potting soil + perlite + bark. In a shared pot, err chunkier for the snake plant's sake.",
+  "temp": "65–80°F.",
+  "humidity": "Average room humidity is fine.",
+  "fertilizer": "Balanced, monthly spring–summer. Feed on the lighter side in a shared pot.",
+  "repot": "Every 1–2 yrs — and this is the moment to separate the two if you want them on their own schedules.",
+  "propagate": "Very easy. Cut below a node, root in water or straight into soil.",
+  "tips": [
+    "Same species as your Brasil, just without the variegation — care is identical.",
+    "Pinch the vines back to keep it full instead of stringy.",
+    "The aerial nubs along the stem are where roots form; bury one to encourage rooting.",
+    "Sap is a mild irritant — wash hands after pruning."
+  ],
+  "issues": [
+    {
+      "sign": "Long bare stretches between leaves",
+      "fix": "Too little light; move brighter and pinch back."
+    },
+    {
+      "sign": "Yellow lower leaves",
+      "fix": "Overwatering — very likely in a pot shared with a snake plant."
+    },
+    {
+      "sign": "Brown crispy tips",
+      "fix": "Dry air or letting it go bone dry too long."
+    }
+  ],
+  "sources": [
+    {
+      "label": "The Spruce",
+      "url": "https://www.thespruce.com/grow-heartleaf-philodendron-5077387"
+    },
+    {
+      "label": "Missouri Botanical Garden",
+      "url": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=281575"
+    }
+  ],
+  "spriteFile": "resources/icons/plant-sprites/heartleaf-philodendron.svg"
+}

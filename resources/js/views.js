@@ -6,7 +6,8 @@
 import { DB, UI, fmtDate, isoDay, relDay, nextCheck, daysUntil, interval,
          effInterval, actWord, isWateredToday, isFedToday, plant, waterLog,
          fedLog, notesLog, lastWatered, lastFed, hasHistory, isBacklog, loc, room,
-         today0, movedPlants, placement, status, plantsIn, unplacedPlants } from './state.js';
+         today0, movedPlants, placement, status, plantsIn, unplacedPlants,
+         potsIn, potMates, sharesPot } from './state.js';
 import { assess, bestRooms, diagnose, sunToday, VERDICT, roomRanges } from './climate.js';
 import { wxLog, recentDryFactor, wateringWindow } from './weather.js';
 import { ZONE, STAGE, TABS, GROUPINGS, MAP_THEME, WMO, SLOTS_PER_WALL, WALLS } from './config.js';
@@ -224,6 +225,7 @@ function cardHTML(p){
         <span class="chip stage">🌱 ${STAGE[p.stage]}</span>
         ${p.growLight?'<span class="chip grow">⚡ grow light</span>':''}
         <span class="chip fit ${fit.overall}">${fe} ${room(p)?room(p).name:'unplaced'}</span>
+        ${sharesPot(p)?`<span class="chip pot">🪴 shares pot · ${potMates(p).filter(q=>q.id!==p.id).map(q=>q.name.split(' ')[0]).join(', ')}</span>`:''}
       </div>
       ${st?`<div class="c-status ${p.medium==='water'?'water':''}">📍 ${st}</div>`:''}
       <div class="c-last ${lw?'':'never'}">🕘 ${lastTxt}</div>
@@ -603,7 +605,9 @@ export function renderHomeMap(){
       }
     }
     const rect = { id:r.id, x, y, w, h };
-    const here = plantsIn(r.id);
+    // one marker per POT, not per plant — two plants in one container share a spot
+    const groups = potsIn(r.id);
+    const here = groups.map(g => g.lead);
     const auto = here.filter(p => placement(p).wall == null);
     if (here.length){
       here.forEach((p) => {
@@ -622,6 +626,7 @@ export function renderHomeMap(){
             : `<text class="pot-emoji" x="0" y="2" font-size="21" text-anchor="middle">${p.sprite}</text>`}
           ${p.growLight?'<text x="12" y="-6" font-size="11" text-anchor="middle">⚡</text>':''}
           ${fit.overall!=='good'?`<text class="fit-flag" x="-13" y="-6" font-size="11" text-anchor="middle">${VERDICT[fit.overall][0]}</text>`:''}
+          ${sharesPot(p)?`<g class="potshare"><circle cx="13" cy="14" r="6.5"/><text x="13" y="17" font-size="8" text-anchor="middle">${potMates(p).length}</text></g>`:''}
           <rect x="-11" y="21" width="22" height="11" rx="3" fill="#6f4526"/>
           <text x="0" y="29" font-size="8" font-weight="800" text-anchor="middle" fill="#fff5df">${p.id}</text>
           </g>

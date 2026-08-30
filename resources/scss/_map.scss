@@ -151,3 +151,10 @@ svg.building .plant-g { pointer-events:none; opacity:.55; }
 }
 .roomacts { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
 button.danger { background:var(--clay); border-color:#8f3a22; box-shadow:0 2px 0 #8f3a22; color:#fff; }
+
+/* a pot holding more than one plant */
+.potshare {
+  circle { fill:#6f4526; stroke:#ffeaa0; stroke-width:1.4; }
+  text { fill:#fff5df; font-weight:800; }
+  pointer-events:none;
+}

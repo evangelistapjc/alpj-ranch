@@ -177,6 +177,36 @@ S["money-tree"] = wrap(
     '<path d="M32 22c-3-7-2-14 0-18 2 4 3 11 0 18z"/></g>',
     "Pachira aquatica")
 
+# --- Heart Leaf Philodendron: plain green hearts, no variegation -----------
+S["heartleaf-philodendron"] = wrap(
+    '<g stroke="#3f6b30" stroke-width="2.2" fill="none" stroke-linecap="round">'
+    '<path d="M32 62V38"/><path d="M32 46 18 36"/><path d="M32 46l14-10"/></g>'
+    '<g stroke="#26501f" stroke-width="1.8" stroke-linejoin="round">'
+    '<path d="M18 40c-9-5-11-16-4-20 5-3 11 0 12 5 1-5 7-8 12-5 7 4 5 15-4 20-6 3-10 3-16 0z" fill="#357c2f"/>'
+    '<path d="M48 40c9-5 11-16 4-20-5-3-11 0-12 5-1-5-7-8-12-5-7 4-5 15 4 20 6 3 10 3 16 0z" fill="#357c2f"/>'
+    '<path d="M32 26c-8-4-10-14-4-18 4-3 9 0 10 4 1-4 6-7 10-4 6 4 4 14-4 18-4 2-8 2-12 0z" fill="#3f8f39"/></g>'
+    '<g stroke="#1f4419" stroke-width="1" opacity=".5" fill="none">'
+    '<path d="M18 38V22"/><path d="M48 38V22"/><path d="M32 24V10"/></g>',
+    "Heart Leaf Philodendron")
+
+# --- Snake Plant: two tall upright leaves + one small pup ------------------
+S["snake-plant"] = wrap(
+    '<g stroke="#1f4a2c" stroke-width="1.8" stroke-linejoin="round">'
+    # tall leaf, leaning slightly left
+    '<path d="M26 60c-5-14-6-32-2-46 2-7 6-9 8-2 3 12 2 34-2 48z" fill="#3d7a3a"/>'
+    # tall leaf, leaning slightly right
+    '<path d="M40 60c5-13 7-29 4-42-2-7-7-8-9-1-2 11-1 30 1 43z" fill="#4a8f42"/>'
+    # the pup
+    '<path d="M48 60c3-7 4-14 2-19-1-3-4-3-5 1-1 5-1 13 0 18z" fill="#5aa54c"/></g>'
+    # pale variegated leaf margins
+    '<g stroke="#cddb6a" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".9">'
+    '<path d="M24.5 58c-4-13-5-29-1.5-42"/><path d="M30 58c2-13 2-29 0-41"/>'
+    '<path d="M41.5 58c4-12 6-27 3.5-38"/><path d="M37 58c-1-12-1-26 0-36"/>'
+    '<path d="M47 59c2-6 3-12 2-16"/></g>'
+    # soil line so the shared pot reads as one planting
+    '<path d="M18 60h30" stroke="#5b4028" stroke-width="2.5" stroke-linecap="round"/>',
+    "Snake Plant")
+
 for name, svg in S.items():
     with open(os.path.join(D, name + ".svg"), "w", encoding="utf-8") as f:
         f.write(svg)
