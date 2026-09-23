@@ -150,6 +150,70 @@ export function tryMove(id, rect){
   return next;
 }
 
+/* How far a wall can travel before it hits the house edge or another room.
+   Returns {min, max} as a signed delta in chunks (positive = right/down), so a
+   drag can be clamped to a legal range instead of simply refusing the move —
+   which is what made resizing feel like it only ever moved one step. */
+export function resizeLimits(room, wall){
+  const g = DB.home.grid;
+  const others = (DB.home.rooms || []).filter(r => r.id !== room.id);
+  const overlapsPerp = (o) => (wall === 'top' || wall === 'bottom')
+    ? (o.x < room.x + room.w && o.x + o.w > room.x)
+    : (o.y < room.y + room.h && o.y + o.h > room.y);
+  const near = others.filter(overlapsPerp);
+
+  if (wall === 'right'){
+    const blockers = near.filter(o => o.x >= room.x + room.w).map(o => o.x);
+    const limit = blockers.length ? Math.min(...blockers) : g.cols;
+    return { min: MIN_W - room.w, max: limit - (room.x + room.w) };
+  }
+  if (wall === 'left'){
+    const blockers = near.filter(o => o.x + o.w <= room.x).map(o => o.x + o.w);
+    const limit = blockers.length ? Math.max(...blockers) : 0;
+    return { min: limit - room.x, max: room.w - MIN_W };
+  }
+  if (wall === 'bottom'){
+    const blockers = near.filter(o => o.y >= room.y + room.h).map(o => o.y);
+    const limit = blockers.length ? Math.min(...blockers) : g.rows;
+    return { min: MIN_H - room.h, max: limit - (room.y + room.h) };
+  }
+  const blockers = near.filter(o => o.y + o.h <= room.y).map(o => o.y + o.h);
+  const limit = blockers.length ? Math.max(...blockers) : 0;
+  return { min: limit - room.y, max: room.h - MIN_H };
+}
+
+/* Apply a wall delta already clamped to resizeLimits(). */
+export function rectAfterResize(room, wall, delta){
+  const d = Math.round(delta);
+  let { x, y, w, h } = room;
+  if (wall === 'left')        { x += d; w -= d; }
+  else if (wall === 'right')  { w += d; }
+  else if (wall === 'top')    { y += d; h -= d; }
+  else                        { h += d; }
+  return { x, y, w, h };
+}
+
+/* Closest position where `rect` fits, searched outward from where it was
+   dropped. Used when a new room lands on top of everything, so it settles
+   somewhere usable instead of being stuck and undraggable. */
+export function nearestFreeRect(rect, exceptId){
+  const g = DB.home.grid;
+  const fit = (x, y) => x >= 0 && y >= 0 && x + rect.w <= g.cols && y + rect.h <= g.rows
+    && !collides({ x, y, w: rect.w, h: rect.h }, exceptId);
+  if (fit(rect.x, rect.y)) return { ...rect };
+  const span = Math.max(g.cols, g.rows);
+  for (let r = 1; r <= span; r++){
+    for (let dy = -r; dy <= r; dy++){
+      for (let dx = -r; dx <= r; dx++){
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;   // ring only
+        const x = rect.x + dx, y = rect.y + dy;
+        if (fit(x, y)) return { x, y, w: rect.w, h: rect.h };
+      }
+    }
+  }
+  return null;
+}
+
 /* Resize by dragging ONE wall. The opposite wall stays put, so dragging the
    top edge changes y and h together rather than only h. */
 export function resizeByWall(room, wall, deltaChunks){

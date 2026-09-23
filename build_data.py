@@ -43,7 +43,6 @@ HOME = {
          "windows": [{"edge": "top", "from": 3, "to": 12, "direct": True, "facing": 175,
                       "spread": 75, "obstruction": 18, "size": "large",
                       "foliage": {"deciduous": True, "summer": 0.45, "bare": 0.9}}],
-         "doors": [{"edge": "bottom", "from": 6, "to": 9}],
          "note": "South window \u00b7 the long midday arc \u2014 your best direct-sun room",
          "sun": {"observed": {"from": "09:45", "to": "16:00"},
                  "hoursAug": 6.1, "quality": "direct",
@@ -58,7 +57,6 @@ HOME = {
          "windows": [{"edge": "top", "from": 5, "to": 10, "direct": True, "facing": 175,
                       "spread": 75, "obstruction": 18, "size": "small",
                       "foliage": {"deciduous": True, "summer": 0.4, "bare": 0.9}}],
-         "doors": [{"edge": "left", "from": 4, "to": 7}],
          "note": "South window \u00b7 same sun as the Den, through a smaller pane",
          "sun": {"observed": {"from": "09:45", "to": "16:00"},
                  "hoursAug": 6.1, "quality": "direct",
@@ -69,7 +67,6 @@ HOME = {
 
         {"id": "bathroom", "name": "Bath", "x": 0, "y": 9, "w": 9, "h": 6, "floor": "tile",
          "light": 0, "windows": [],
-         "doors": [{"edge": "right", "from": 2, "to": 4}],
          "note": "No light \u00b7 ideal future grow-light + humidity shelf",
          "sun": {"hoursAug": 0, "quality": "none", "note": "Windowless \u2014 grow light or nothing."},
          "climate": {"tempF": [66, 73], "humidityPct": [55, 80], "airflow": "still",
@@ -77,7 +74,6 @@ HOME = {
 
         {"id": "closet", "name": "Closet", "x": 0, "y": 15, "w": 9, "h": 6, "floor": "wood",
          "light": 0, "windows": [],
-         "doors": [{"edge": "right", "from": 2, "to": 4}],
          "note": "No light",
          "sun": {"hoursAug": 0, "quality": "none", "note": "Windowless."},
          "climate": {"tempF": [64, 69], "humidityPct": [45, 55], "airflow": "still",
@@ -93,7 +89,6 @@ HOME = {
               "spread": 75, "obstruction": 10, "bay": True, "size": "large"},
              {"edge": "left",   "from": 2, "to": 7,  "direct": True,  "facing": 90,
               "spread": 75, "obstruction": 10, "bay": True, "size": "large"}],
-         "doors": [{"edge": "top", "from": 10, "to": 13}],
          "note": "3-pane bay facing north/northeast/EAST \u00b7 real morning sun, bright all day",
          "sun": {"observed": {"from": "06:25", "to": "12:50"},
                  "hoursAug": 6.4, "quality": "direct-morning",
@@ -110,7 +105,6 @@ HOME = {
          "light": 2,
          "windows": [{"edge": "bottom", "from": 5, "to": 13, "direct": False, "facing": 0,
                       "spread": 75, "obstruction": 10, "size": "large"}],
-         "doors": [{"edge": "left", "from": 3, "to": 6}],
          "note": "North slider only \u00b7 the dimmest room that has a window at all",
          "sun": {"hoursAug": 0.5, "quality": "indirect",
                  "note": "North-facing, so barely half an hour of glancing sun at midsummer "
@@ -124,7 +118,6 @@ HOME = {
          "windows": [{"edge": "bottom", "from": 1, "to": 17, "direct": False, "facing": 0,
                       "spread": 90, "obstruction": 12, "overhang": 35, "size": "open",
                       "foliage": {"deciduous": True, "summer": 0.25, "bare": 0.85}}],
-         "doors": [{"edge": "top", "from": 5, "to": 13}],
          "note": "Outdoor \u00b7 north-facing and overhung \u00b7 little direct sun, huge sky view",
          "sun": {"hoursAug": 0.5, "quality": "indirect-bright",
                  "note": "CORRECTED down from 4. North-facing and shaded from above, so very "
@@ -135,6 +128,72 @@ HOME = {
                      "note": "Outdoors \u2014 tracks live weather. Wind and sun dry pots very fast."}},
     ],
 }
+
+# ---- doors -------------------------------------------------------------
+# Generated rather than hand-written so that a door between two rooms is ONE
+# opening: both sides get the same pairId and mirrored chunk range. Without a
+# stable id the UI has nothing to delete by.
+def _wall_span(r, wall):
+    return (r["x"], r["x"] + r["w"]) if wall in ("top", "bottom") else (r["y"], r["y"] + r["h"])
+
+def _touches(a, b, wall):
+    if wall == "top":    ok = b["y"] + b["h"] == a["y"]
+    elif wall == "bottom": ok = b["y"] == a["y"] + a["h"]
+    elif wall == "left":  ok = b["x"] + b["w"] == a["x"]
+    else:                 ok = b["x"] == a["x"] + a["w"]
+    if not ok:
+        return None
+    a1, a2 = _wall_span(a, wall)
+    b1, b2 = _wall_span(b, wall)
+    lo, hi = max(a1, b1), min(a2, b2)
+    return (lo, hi) if hi > lo else None
+
+_OPP = {"top": "bottom", "bottom": "top", "left": "right", "right": "left"}
+
+def _add_door(rooms, room_id, wall, frm, to, pid):
+    by = {r["id"]: r for r in rooms}
+    a = by[room_id]
+    a.setdefault("doors", []).append({"edge": wall, "from": frm, "to": to, "pairId": pid})
+    origin = a["x"] if wall in ("top", "bottom") else a["y"]
+    abs_from, abs_to = origin + frm, origin + to
+    for b in rooms:
+        if b["id"] == room_id:
+            continue
+        span = _touches(a, b, wall)
+        if not span:
+            continue
+        lo, hi = max(span[0], abs_from), min(span[1], abs_to)
+        if hi <= lo:
+            continue
+        b_origin = b["x"] if wall in ("top", "bottom") else b["y"]
+        b.setdefault("doors", []).append(
+            {"edge": _OPP[wall], "from": lo - b_origin, "to": hi - b_origin, "pairId": pid})
+
+# shared doorways, then the ones that open onto the hallway
+for i, (rid, wall, f, t) in enumerate([
+        ("den",      "bottom", 2, 5),    # den  <-> bath
+        ("bathroom", "bottom", 3, 6),    # bath <-> closet
+        ("closet",   "bottom", 3, 6),    # closet <-> bedroom
+        ("kitchen",  "bottom", 2, 5),    # kitchen <-> living
+        ("living",   "bottom", 6, 10),   # living <-> patio
+        ("bedroom",  "right",  1, 3),    # bedroom <-> living
+]):
+    _add_door(HOME["rooms"], rid, wall, f, t, "door-%02d" % i)
+
+for i, (rid, wall, f, t) in enumerate([
+        ("den",     "right", 3, 6),      # onto the hallway
+        ("kitchen", "left",  4, 7),
+        ("bedroom", "top",  10, 13),
+]):
+    HOME["rooms"][[r["id"] for r in HOME["rooms"]].index(rid)].setdefault("doors", []).append(
+        {"edge": wall, "from": f, "to": t, "pairId": "hall-%02d" % i})
+
+# every shipped window needs a stable id too, for the same reason
+for _r in HOME["rooms"]:
+    for _j, _w in enumerate(_r.get("windows", [])):
+        _w.setdefault("pairId", "win-%s-%d" % (_r["id"], _j))
+    _r.setdefault("doors", [])
+
 
 # ---- plants -------------------------------------------------------------
 # medium: "soil" or "water" (currently rooting in water)

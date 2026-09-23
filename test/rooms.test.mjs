@@ -109,5 +109,26 @@ ok('  ... but the wall itself still exists',
    R.wallSegments(DB.roomById.bedroom, 'bottom').length > 0 &&
    R.wallLength(DB.roomById.bedroom, 'bottom') === DB.roomById.bedroom.w);
 
+console.log('\n--- resize limits (how far a phantom wall may travel) ---');
+const lim = (id, w) => R.resizeLimits(DB.roomById[id], w);
+const denR = lim('den', 'right');
+console.log('  den right   :', JSON.stringify(denR));
+console.log('  bath bottom :', JSON.stringify(lim('bathroom', 'bottom')));
+ok('a wall can travel more than one chunk', denR.max > 1, JSON.stringify(denR));
+ok('  ... and stops before leaving the grid',
+   DB.roomById.den.x + DB.roomById.den.w + denR.max <= 36);
+ok('a wall hard against a neighbour reports no room to grow',
+   lim('bathroom', 'bottom').max === 0, JSON.stringify(lim('bathroom', 'bottom')));
+ok('shrinking is bounded by the minimum size',
+   lim('bathroom', 'right').min === 2 - DB.roomById.bathroom.w);
+
+console.log('\n--- nearest free spot (a room dropped on top of everything) ---');
+const onTop = R.nearestFreeRect({ x: 0, y: 0, w: 6, h: 6 }, '__none__');
+ok('finds somewhere the rect actually fits',
+   !!onTop && !R.collides(onTop, '__none__'), JSON.stringify(onTop));
+const already = R.nearestFreeRect({ x: 9, y: 9, w: 6, h: 6 }, '__none__');
+ok('  ... and leaves an already-valid position untouched',
+   already && already.x === 9 && already.y === 9, JSON.stringify(already));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

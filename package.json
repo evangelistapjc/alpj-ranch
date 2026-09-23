@@ -11,7 +11,7 @@
     "build:css": "sass resources/scss/main.scss resources/css/stylesheet.css --style=compressed --no-source-map",
     "build:css:py": "python build_css.py",
     "build:sw": "python build_sw.py",
-    "serve": "python -m http.server 8000",
+    "serve": "python serve.py 8000",
     "dev": "npm run build && npm run serve",
     "bump": "python build_sw.py --bump patch",
     "bump:minor": "python build_sw.py --bump minor",

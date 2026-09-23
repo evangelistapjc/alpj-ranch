@@ -278,3 +278,25 @@ button.danger-t { color:var(--clay); }
 @media (max-width:820px){
   .planttray.buildpanel { flex:1 1 100%; }
 }
+
+/* phantom preview while dragging or resizing a room */
+.ghost {
+  fill:rgba(124,214,120,.18); stroke:#7cd678; stroke-width:3; stroke-dasharray:7 5;
+  pointer-events:none;
+  &.bad { fill:rgba(220,90,70,.18); stroke:#dc5a46; }
+}
+.ghostlabel {
+  fill:#fff5df; font-size:11px; font-weight:800; pointer-events:none;
+  paint-order:stroke; stroke:rgba(0,0,0,.6); stroke-width:3px;
+}
+.mapwin.picked, .mapdoor.picked { stroke:var(--clay); stroke-width:3; }
+.chunk.picked { outline:2px solid var(--sky-d); outline-offset:1px; }
+
+/* toolbar for the block you clicked on */
+.pickbar {
+  display:flex; gap:5px; align-items:center; flex-wrap:wrap; font-size:10.5px;
+  background:#e9f5fb; border:2px solid var(--sky-d); border-radius:7px; padding:5px 7px;
+  b { text-transform:capitalize; }
+  span { margin-right:auto; }
+}
+button.danger.tiny { background:var(--clay); border-color:#8f3a22; box-shadow:0 2px 0 #8f3a22; color:#fff; }

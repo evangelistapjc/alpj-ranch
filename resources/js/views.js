@@ -561,7 +561,8 @@ export function renderRoomPanel(){
       'chunk',
       f ? ('has-' + f.kind) : '',
       seg && seg.neighbor ? 'shared' : (seg && seg.exterior ? 'exterior' : 'hall'),
-      inSel ? 'sel' : ''
+      inSel ? 'sel' : '',
+      f && UI.featSel === f.pairId ? 'picked' : ''
     ].filter(Boolean).join(' ');
     const glyph = f ? (f.kind === 'window' ? '🪟' : '🚪') : '';
     return `<button class="${cls}" data-chunk="${i}" data-room="${r.id}" data-wall="${wall}"
@@ -604,7 +605,11 @@ export function renderRoomPanel(){
         </select></label>
         <label class="chk"><input type="checkbox" data-roomoutdoor="${r.id}" ${r.outdoor?'checked':''}> Outdoor</label>
       </div>
-      <div class="rf-size">${r.w} × ${r.h} chunks · at (${r.x}, ${r.y})</div>
+      <div class="rf-row">
+        <label class="narrow">Width<input type="number" min="2" max="${DB.home.grid.cols}" value="${r.w}" data-roomw="${r.id}"></label>
+        <label class="narrow">Height<input type="number" min="2" max="${DB.home.grid.rows}" value="${r.h}" data-roomh="${r.id}"></label>
+        <div class="rf-size"><b>${r.w} × ${r.h}</b> chunks<br>at (${r.x}, ${r.y})</div>
+      </div>
     </div>
 
     <div class="walltabs">${RWALLS.map(wl => {
@@ -621,6 +626,17 @@ export function renderRoomPanel(){
       </div>
 
       <div class="segs">${segRows}</div>
+
+      ${(() => {
+        const pick = feats.find(f => f.pairId === UI.featSel);
+        if (!pick) return '';
+        return `<div class="pickbar">
+          <span>${pick.kind === 'window' ? '🪟' : '🚪'} <b>${pick.kind}</b> on chunks ${(pick.from??0)+1}–${pick.to??0}</span>
+          <button class="ghost tiny" data-action="extendfeat" data-room="${r.id}" data-wall="${wall}" data-pair="${pick.pairId}">＋ Extend to highlight</button>
+          <button class="danger tiny" data-action="delfeature" data-pair="${pick.pairId}">🗑️ Remove</button>
+          <button class="ghost tiny" data-action="clearsel">Done</button>
+        </div>`;
+      })()}
 
       <div class="wp-tools">
         <span>Add:</span>
@@ -677,6 +693,12 @@ export function renderHomeMap(){
   const PLANK = { wood:TH.plankW, carpet:TH.plankC, tile:TH.plankT, grass:TH.plankG };
   const T = DB.home.grid.tile, W = DB.home.grid.cols*T, H = DB.home.grid.rows*T;
   let defs='', floors='', walls='', wins='', glows='', labels='', plants='', drops='', slots='', build='';
+  // Phantom preview for a drag or resize. Always present so the drag can move
+  // it directly without re-rendering the map on every frame.
+  const ghost = UI.build
+    ? `<rect id="ghostRect" class="ghost" x="0" y="0" width="0" height="0" style="display:none"/>
+       <text id="ghostLabel" class="ghostlabel" x="0" y="0" text-anchor="middle" style="display:none"></text>`
+    : '';
   floors += `<rect x="0" y="0" width="${W}" height="${H}" fill="${TH.hall}"/><rect x="0" y="0" width="${W}" height="${H}" fill="url(#hall)"/>`;
   defs += `<pattern id="hall" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${TH.hall}"/><rect width="16" height="2" fill="${TH.hall2}"/></pattern>`;
   (DB.home.rooms || []).forEach(r => {
@@ -709,8 +731,9 @@ export function renderHomeMap(){
       const th = 6;
       const g = featureRect(r, f, T, th);
       if (!g) return;
+      const picked = UI.build && UI.featSel && f.pairId === UI.featSel;
       if (kind === 'window'){
-        wins += `<rect class="mapwin" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="2"
+        wins += `<rect class="mapwin ${picked?'picked':''}" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="2"
           fill="#dff0f7" stroke="#8bb8cc" stroke-width="1.5"/>`;
         if (f.direct){
           const sx = g.horiz ? g.x + g.w + 6 : g.x + g.w/2;
@@ -719,7 +742,7 @@ export function renderHomeMap(){
         }
       } else {
         // a doorway is a gap in the wall, drawn as a light break plus a swing arc
-        wins += `<rect class="mapdoor" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="1"
+        wins += `<rect class="mapdoor ${picked?'picked':''}" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="1"
           fill="#f4e2b8" stroke="#8a6a3e" stroke-width="1"/>`;
       }
     };
@@ -731,19 +754,23 @@ export function renderHomeMap(){
     // placement reads through the overlay, so dragged plants land in the new room
     if (UI.build){
       const sel = UI.selRoom === r.id;
+      void sel;
       build += `<rect class="roomhit ${sel?'sel':''}" data-roomhit="${r.id}" x="${x}" y="${y}" width="${w}" height="${h}" fill="transparent"/>`;
       if (sel){
         build += `<rect class="roomsel" x="${x+2}" y="${y+2}" width="${w-4}" height="${h-4}" rx="3"/>`;
 
         // One grab bar per wall — dragging a wall moves only that wall, so the
         // room grows in the direction you pull instead of only bottom-right.
-        const GB = 9;
+        // Sit the bars just INSIDE the wall rather than straddling it: on the
+        // line they painted over the windows, so an edit only became visible
+        // once the room was deselected.
+        const GB = 8, IN = 4;
         WALLS.forEach(wl => {
           let bx, by, bw, bh;
-          if (wl === 'top'){ bx = x + GB; by = y - GB/2; bw = w - GB*2; bh = GB; }
-          else if (wl === 'bottom'){ bx = x + GB; by = y + h - GB/2; bw = w - GB*2; bh = GB; }
-          else if (wl === 'left'){ bx = x - GB/2; by = y + GB; bw = GB; bh = h - GB*2; }
-          else { bx = x + w - GB/2; by = y + GB; bw = GB; bh = h - GB*2; }
+          if (wl === 'top'){ bx = x + GB; by = y + IN; bw = w - GB*2; bh = GB; }
+          else if (wl === 'bottom'){ bx = x + GB; by = y + h - IN - GB; bw = w - GB*2; bh = GB; }
+          else if (wl === 'left'){ bx = x + IN; by = y + GB; bw = GB; bh = h - GB*2; }
+          else { bx = x + w - IN - GB; by = y + GB; bw = GB; bh = h - GB*2; }
           const active = UI.selWall === wl;
           build += `<rect class="wallgrab ${wl} ${active?'on':''}" data-wallgrab="${r.id}" data-wall="${wl}"
             x="${bx}" y="${by}" width="${Math.max(4,bw)}" height="${Math.max(4,bh)}" rx="2"/>`;
@@ -794,7 +821,7 @@ export function renderHomeMap(){
       });
     }
   });
-  const svg = `<svg id="mapsvg" class="${UI.arrange?'arranging':''} ${UI.build?'building':''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Apartment map"><defs>${defs}</defs>${floors}${glows}${walls}${wins}${labels}${drops}${slots}${plants}${build}</svg>`;
+  const svg = `<svg id="mapsvg" class="${UI.arrange?'arranging':''} ${UI.build?'building':''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Apartment map"><defs>${defs}</defs>${floors}${glows}${walls}${wins}${labels}${drops}${slots}${plants}${build}${ghost}</svg>`;
   const mf = $('mapframe'); mf.style.background = `linear-gradient(${TH.frameA},${TH.frameB})`; mf.innerHTML = svg;
   $('maplegend').innerHTML = `<span>☀️ <b>light</b> (1–5)</span><span>☀️ next to a window = <b>direct sun</b></span><span><b>⚡</b> grow light</span><span>⚠️ <b>poor fit</b> for that spot</span><span>🌑 no light</span><span>${UI.arrange?'<b>Drag</b> a pot to move it':'Tap a plant to open its card'}</span>`;
 }

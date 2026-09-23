@@ -53,14 +53,8 @@
             "deciduous": true,
             "summer": 0.45,
             "bare": 0.9
-          }
-        }
-      ],
-      "doors": [
-        {
-          "edge": "bottom",
-          "from": 6,
-          "to": 9
+          },
+          "pairId": "win-den-0"
         }
       ],
       "note": "South window · the long midday arc — your best direct-sun room",
@@ -85,7 +79,21 @@
         "airflow": "calm",
         "dryFactor": 1.0,
         "note": "Interior wall, steady — the most average spot in the house."
-      }
+      },
+      "doors": [
+        {
+          "edge": "bottom",
+          "from": 2,
+          "to": 5,
+          "pairId": "door-00"
+        },
+        {
+          "edge": "right",
+          "from": 3,
+          "to": 6,
+          "pairId": "hall-00"
+        }
+      ]
     },
     {
       "id": "kitchen",
@@ -110,14 +118,8 @@
             "deciduous": true,
             "summer": 0.4,
             "bare": 0.9
-          }
-        }
-      ],
-      "doors": [
-        {
-          "edge": "left",
-          "from": 4,
-          "to": 7
+          },
+          "pairId": "win-kitchen-0"
         }
       ],
       "note": "South window · same sun as the Den, through a smaller pane",
@@ -142,7 +144,21 @@
         "airflow": "calm",
         "dryFactor": 1.25,
         "note": "Direct sun + cooking heat: warmest room, and soil dries noticeably faster."
-      }
+      },
+      "doors": [
+        {
+          "edge": "bottom",
+          "from": 2,
+          "to": 5,
+          "pairId": "door-03"
+        },
+        {
+          "edge": "left",
+          "from": 4,
+          "to": 7,
+          "pairId": "hall-01"
+        }
+      ]
     },
     {
       "id": "bathroom",
@@ -154,13 +170,6 @@
       "floor": "tile",
       "light": 0,
       "windows": [],
-      "doors": [
-        {
-          "edge": "right",
-          "from": 2,
-          "to": 4
-        }
-      ],
       "note": "No light · ideal future grow-light + humidity shelf",
       "sun": {
         "hoursAug": 0,
@@ -179,7 +188,21 @@
         "airflow": "still",
         "dryFactor": 0.75,
         "note": "Shower steam keeps humidity high and soil wet far longer."
-      }
+      },
+      "doors": [
+        {
+          "edge": "top",
+          "from": 2,
+          "to": 5,
+          "pairId": "door-00"
+        },
+        {
+          "edge": "bottom",
+          "from": 3,
+          "to": 6,
+          "pairId": "door-01"
+        }
+      ]
     },
     {
       "id": "closet",
@@ -191,13 +214,6 @@
       "floor": "wood",
       "light": 0,
       "windows": [],
-      "doors": [
-        {
-          "edge": "right",
-          "from": 2,
-          "to": 4
-        }
-      ],
       "note": "No light",
       "sun": {
         "hoursAug": 0,
@@ -216,7 +232,21 @@
         "airflow": "still",
         "dryFactor": 0.8,
         "note": "Dead air and no light — soil just sits wet."
-      }
+      },
+      "doors": [
+        {
+          "edge": "top",
+          "from": 3,
+          "to": 6,
+          "pairId": "door-01"
+        },
+        {
+          "edge": "bottom",
+          "from": 3,
+          "to": 6,
+          "pairId": "door-02"
+        }
+      ]
     },
     {
       "id": "bedroom",
@@ -237,7 +267,8 @@
           "spread": 75,
           "obstruction": 10,
           "bay": true,
-          "size": "large"
+          "size": "large",
+          "pairId": "win-bedroom-0"
         },
         {
           "edge": "bottom",
@@ -248,7 +279,8 @@
           "spread": 75,
           "obstruction": 10,
           "bay": true,
-          "size": "large"
+          "size": "large",
+          "pairId": "win-bedroom-1"
         },
         {
           "edge": "left",
@@ -259,14 +291,8 @@
           "spread": 75,
           "obstruction": 10,
           "bay": true,
-          "size": "large"
-        }
-      ],
-      "doors": [
-        {
-          "edge": "top",
-          "from": 10,
-          "to": 13
+          "size": "large",
+          "pairId": "win-bedroom-2"
         }
       ],
       "note": "3-pane bay facing north/northeast/EAST · real morning sun, bright all day",
@@ -291,7 +317,27 @@
         "airflow": "drafty",
         "dryFactor": 1.05,
         "note": "MEASURED: a thermometer on the bay shelf read 23C (73F) mid-afternoon, well above the 62-69F previously assumed. The bay glass still runs cold overnight, so treat this as the daytime high end of a wide daily swing."
-      }
+      },
+      "doors": [
+        {
+          "edge": "top",
+          "from": 3,
+          "to": 6,
+          "pairId": "door-02"
+        },
+        {
+          "edge": "right",
+          "from": 1,
+          "to": 3,
+          "pairId": "door-05"
+        },
+        {
+          "edge": "top",
+          "from": 10,
+          "to": 13,
+          "pairId": "hall-02"
+        }
+      ]
     },
     {
       "id": "living",
@@ -311,14 +357,8 @@
           "facing": 0,
           "spread": 75,
           "obstruction": 10,
-          "size": "large"
-        }
-      ],
-      "doors": [
-        {
-          "edge": "left",
-          "from": 3,
-          "to": 6
+          "size": "large",
+          "pairId": "win-living-0"
         }
       ],
       "note": "North slider only · the dimmest room that has a window at all",
@@ -339,7 +379,27 @@
         "airflow": "drafty",
         "dryFactor": 0.85,
         "note": "North-facing and coolest indoor room; the slider leaks a draft."
-      }
+      },
+      "doors": [
+        {
+          "edge": "top",
+          "from": 5,
+          "to": 8,
+          "pairId": "door-03"
+        },
+        {
+          "edge": "bottom",
+          "from": 6,
+          "to": 10,
+          "pairId": "door-04"
+        },
+        {
+          "edge": "left",
+          "from": 10,
+          "to": 12,
+          "pairId": "door-05"
+        }
+      ]
     },
     {
       "id": "patio",
@@ -366,14 +426,8 @@
             "deciduous": true,
             "summer": 0.25,
             "bare": 0.85
-          }
-        }
-      ],
-      "doors": [
-        {
-          "edge": "top",
-          "from": 5,
-          "to": 13
+          },
+          "pairId": "win-patio-0"
         }
       ],
       "note": "Outdoor · north-facing and overhung · little direct sun, huge sky view",
@@ -395,7 +449,15 @@
         "dryFactor": 1.6,
         "tracksWeather": true,
         "note": "Outdoors — tracks live weather. Wind and sun dry pots very fast."
-      }
+      },
+      "doors": [
+        {
+          "edge": "top",
+          "from": 6,
+          "to": 10,
+          "pairId": "door-04"
+        }
+      ]
     }
   ]
 }

@@ -23,7 +23,7 @@ export const DB = { home:null, plants:[], roomById:{}, almanac:null, shippedRoom
 export const UI = { view:'care', group:'light', openId:null, openTab:'overview',
                     arrange:false, build:false, editWater:null, dragId:null,
                     // room builder
-                    selRoom:null, selWall:'top', wallSel:null, blockTool:'window' };
+                    selRoom:null, selWall:'top', wallSel:null, featSel:null, blockTool:'window' };
 
 // Storage lives in store.js; re-exported so existing imports keep working.
 export { Store } from './store.js';

@@ -66,6 +66,7 @@ function onClick(e){
     case 'delfeature':  A.deleteFeature(d.pair);              break;
     case 'winsunpair':  A.toggleWinSun(d.pair);               break;
     case 'splitpot':    A.splitPot(d.id);                     break;
+    case 'extendfeat':  A.extendFeature(d.room, d.wall, d.pair); break;
     // journal sync between origins (phone ⇄ laptop)
     case 'exportjournal': A.exportJournalFile();              break;
     case 'importjournal': A.importJournalFile();              break;
@@ -80,6 +81,8 @@ function onChange(e){
   if (d.roomfloor)   A.setRoomFloor(d.roomfloor, e.target.value);
   if (d.roomoutdoor) A.setRoomOutdoor(d.roomoutdoor, e.target.checked);
   if (d.joinpot)     A.combinePot(d.joinpot, e.target.value);
+  if (d.roomw)       A.setRoomSize(d.roomw, 'w', e.target.value);
+  if (d.roomh)       A.setRoomSize(d.roomh, 'h', e.target.value);
 }
 
 function onKey(e){
