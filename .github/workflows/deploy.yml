@@ -1,41 +1,117 @@
-name: Deploy ALPJ Ranch to GitHub Pages
+name: Build, version & deploy ALPJ Ranch
 
-# Compiles SCSS → resources/css/stylesheet.css, then publishes the site to Pages.
-# One-time setup: repo Settings → Pages → "Build and deployment" → Source: GitHub Actions.
+# Every push to master: rebuild the data/sprites/CSS, bump the version, stamp
+# the service worker, commit that bump back to master, then publish to Pages.
+#
+# WHY THE BUMP LIVES IN THIS WORKFLOW RATHER THAN ITS OWN
+# A push made with GITHUB_TOKEN deliberately does not trigger further workflow
+# runs. So if a separate workflow committed the bump, THIS one would already
+# have deployed the pre-bump tree and nothing would redeploy afterwards — the
+# live site would sit one version behind the repo forever. Bumping before the
+# artifact is uploaded keeps the deployed site and the repo on the same version.
+#
+# One-time setup: Settings → Pages → Build and deployment → Source: GitHub Actions.
 
 on:
   push:
-    branches: [master]      # this repo's default branch is master, not main
+    branches: [master]
   workflow_dispatch:
+    inputs:
+      level:
+        description: "Version bump level"
+        required: false
+        default: patch
+        type: choice
+        options: [patch, minor, major]
 
 permissions:
-  contents: read
+  contents: write     # required to push the version bump back to master
   pages: write
   id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # Deliberately NOT cancel-in-progress: a cancelled run could push a version
+  # bump and then never deploy it.
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    # Belt and braces against a bump loop. GITHUB_TOKEN pushes already don't
+    # retrigger, but this also holds if someone later swaps in a PAT.
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout master
         uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - name: Compile SCSS
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build deps
+        run: npm ci
+
+      - name: Decide bump level
+        id: level
         run: |
-          npm install -g sass
-          sass resources/scss/main.scss resources/css/stylesheet.css --style=compressed --no-source-map
+          LEVEL="${{ github.event.inputs.level }}"
+          if [ -z "$LEVEL" ]; then
+            MSG="$(git log -1 --pretty=%B)"
+            case "$MSG" in
+              *"[major]"*) LEVEL=major ;;
+              *"[minor]"*) LEVEL=minor ;;
+              *)           LEVEL=patch ;;
+            esac
+          fi
+          echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
+          echo "Bump level: $LEVEL"
+
+      - name: Rebuild data, sprites and CSS
+        run: |
+          npm run build:data
+          npm run build:sprites
+          npm run build:css
+
+      - name: Bump version and stamp the service worker
+        run: python build_sw.py --bump "${{ steps.level.outputs.level }}"
+
+      - name: Read the new version
+        id: ver
+        run: |
+          V="$(python -c "import json;print(json.load(open('version.json'))['version'])")"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "Released version: $V"
+
+      - name: Commit the bump back to master
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit — build output already matches."
+          else
+            git commit -m "chore: release v${{ steps.ver.outputs.version }} [skip ci]"
+            git push origin HEAD:master
+          fi
+
+      # node_modules is only needed for the Sass binary. Leaving it in would
+      # ship tens of MB of dependencies into the Pages artifact.
+      - name: Drop build-only files before publishing
+        run: rm -rf node_modules
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -43,8 +119,16 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: "."
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "### 🌾 Deployed v${{ steps.ver.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Bump level: \`${{ steps.level.outputs.level }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Live: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- The footer chip on the site should read **v${{ steps.ver.outputs.version }}**." >> "$GITHUB_STEP_SUMMARY"
