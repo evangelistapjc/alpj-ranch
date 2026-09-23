@@ -17,7 +17,7 @@ HOME = {
                     "to late afternoon, and the bedroom's 3-pane bay takes direct EAST sun all "
                     "morning. The living room is north-facing and gets almost none; the patio is "
                     "bright but mostly indirect.",
-    "grid": {"cols": 12, "rows": 10, "tile": 40},
+    "grid": {"cols": 36, "rows": 30, "tile": 16},
     # The plan is drawn SOUTH-UP (Den/Kitchen windows sit on the top edge and
     # are south-facing), which flips the horizontal axis: left is EAST, right
     # is WEST. resources/js/sun.js reads this rather than hard-coding it.
@@ -33,52 +33,68 @@ HOME = {
     # patio floor sits entirely in shade under its arch (predicted - overhung).
     # Two independent falsifiable predictions, both held.
     "orientation": {"top": "S", "bottom": "N", "left": "E", "right": "W"},
-    # Each room carries a microclimate block so the app can score how well a
-    # plant actually fits where it's standing (see resources/js/climate.js).
-    #   tempF / humidityPct : the range that spot actually sits at
-    #   airflow             : "still" | "calm" | "drafty"  (drafty = cold-draft risk)
-    #   dryFactor           : relative soil dry-down speed vs. the home average
-    #                         (>1 dries faster → shorter check interval)
+    # Walls are addressed in GRID CHUNKS. A feature (window/door) occupies a
+    # half-open chunk range [from, to) in wall-local coordinates: top/bottom
+    # walls run left->right and are `w` chunks long, left/right walls run
+    # top->bottom and are `h` chunks long.
     "rooms": [
-        {"id": "den", "name": "Den", "x": 0, "y": 0, "w": 5, "h": 3, "floor": "wood",
-         "light": 5, "windows": [{"edge": "top", "direct": True, "facing": 175, "spread": 75,
-                                  "obstruction": 18, "size": "large",
-                                  "foliage": {"deciduous": True, "summer": 0.45, "bare": 0.9}}],
-         "note": "South window · the long midday arc — your best direct-sun room",
+        {"id": "den", "name": "Den", "x": 0, "y": 0, "w": 15, "h": 9, "floor": "wood",
+         "light": 5,
+         "windows": [{"edge": "top", "from": 3, "to": 12, "direct": True, "facing": 175,
+                      "spread": 75, "obstruction": 18, "size": "large",
+                      "foliage": {"deciduous": True, "summer": 0.45, "bare": 0.9}}],
+         "doors": [{"edge": "bottom", "from": 6, "to": 9}],
+         "note": "South window \u00b7 the long midday arc \u2014 your best direct-sun room",
          "sun": {"observed": {"from": "09:45", "to": "16:00"},
                  "hoursAug": 6.1, "quality": "direct",
                  "note": "Observed lit 9:45 AM-4 PM. South-facing, so it gets MORE hours in "
                          "winter (low sun stays within the window's arc) and fewer at "
                          "midsummer when the sun passes overhead."},
          "climate": {"tempF": [65, 70], "humidityPct": [45, 55], "airflow": "calm",
-                     "dryFactor": 1.0, "note": "Interior wall, steady — the most average spot in the house."}},
-        {"id": "kitchen", "name": "Kitchen", "x": 7, "y": 0, "w": 5, "h": 4, "floor": "tile",
-         "light": 4, "windows": [{"edge": "top", "direct": True, "facing": 175, "spread": 75,
-                                  "obstruction": 18, "size": "small",
-                                  "foliage": {"deciduous": True, "summer": 0.4, "bare": 0.9}}],
-         "note": "South window · same sun as the Den, through a smaller pane",
+                     "dryFactor": 1.0, "note": "Interior wall, steady \u2014 the most average spot in the house."}},
+
+        {"id": "kitchen", "name": "Kitchen", "x": 21, "y": 0, "w": 15, "h": 12, "floor": "tile",
+         "light": 4,
+         "windows": [{"edge": "top", "from": 5, "to": 10, "direct": True, "facing": 175,
+                      "spread": 75, "obstruction": 18, "size": "small",
+                      "foliage": {"deciduous": True, "summer": 0.4, "bare": 0.9}}],
+         "doors": [{"edge": "left", "from": 4, "to": 7}],
+         "note": "South window \u00b7 same sun as the Den, through a smaller pane",
          "sun": {"observed": {"from": "09:45", "to": "16:00"},
                  "hoursAug": 6.1, "quality": "direct",
-                 "note": "Same hours as the Den — same orientation — but a smaller window, "
+                 "note": "Same hours as the Den \u2014 same orientation \u2014 but a smaller window, "
                          "so less total light lands in the room."},
          "climate": {"tempF": [66, 76], "humidityPct": [40, 62], "airflow": "calm",
                      "dryFactor": 1.25, "note": "Direct sun + cooking heat: warmest room, and soil dries noticeably faster."}},
-        {"id": "bathroom", "name": "Bath", "x": 0, "y": 3, "w": 3, "h": 2, "floor": "tile",
-         "light": 0, "windows": [], "note": "No light · ideal future grow-light + humidity shelf",
-         "sun": {"hoursAug": 0, "quality": "none", "note": "Windowless — grow light or nothing."},
+
+        {"id": "bathroom", "name": "Bath", "x": 0, "y": 9, "w": 9, "h": 6, "floor": "tile",
+         "light": 0, "windows": [],
+         "doors": [{"edge": "right", "from": 2, "to": 4}],
+         "note": "No light \u00b7 ideal future grow-light + humidity shelf",
+         "sun": {"hoursAug": 0, "quality": "none", "note": "Windowless \u2014 grow light or nothing."},
          "climate": {"tempF": [66, 73], "humidityPct": [55, 80], "airflow": "still",
                      "dryFactor": 0.75, "note": "Shower steam keeps humidity high and soil wet far longer."}},
-        {"id": "closet", "name": "Closet", "x": 0, "y": 5, "w": 3, "h": 2, "floor": "wood",
-         "light": 0, "windows": [], "note": "No light",
+
+        {"id": "closet", "name": "Closet", "x": 0, "y": 15, "w": 9, "h": 6, "floor": "wood",
+         "light": 0, "windows": [],
+         "doors": [{"edge": "right", "from": 2, "to": 4}],
+         "note": "No light",
          "sun": {"hoursAug": 0, "quality": "none", "note": "Windowless."},
          "climate": {"tempF": [64, 69], "humidityPct": [45, 55], "airflow": "still",
-                     "dryFactor": 0.8, "note": "Dead air and no light — soil just sits wet."}},
-        {"id": "bedroom", "name": "Bedroom", "x": 0, "y": 7, "w": 6, "h": 3, "floor": "carpet",
-         "light": 5, "windows": [
-             {"edge": "bottom", "direct": False, "facing": 0,  "spread": 75, "obstruction": 10, "bay": True, "size": "large"},
-             {"edge": "bottom", "direct": True,  "facing": 45, "spread": 75, "obstruction": 10, "bay": True, "size": "large"},
-             {"edge": "left",   "direct": True,  "facing": 90, "spread": 75, "obstruction": 10, "bay": True, "size": "large"}],
-         "note": "3-pane bay facing north/northeast/EAST · real morning sun, bright all day",
+                     "dryFactor": 0.8, "note": "Dead air and no light \u2014 soil just sits wet."}},
+
+        {"id": "bedroom", "name": "Bedroom", "x": 0, "y": 21, "w": 18, "h": 9, "floor": "carpet",
+         "light": 5,
+         # 3-pane bay: two panes on the north wall, one wrapping onto the east wall
+         "windows": [
+             {"edge": "bottom", "from": 2, "to": 6,  "direct": False, "facing": 0,
+              "spread": 75, "obstruction": 10, "bay": True, "size": "large"},
+             {"edge": "bottom", "from": 7, "to": 11, "direct": True,  "facing": 45,
+              "spread": 75, "obstruction": 10, "bay": True, "size": "large"},
+             {"edge": "left",   "from": 2, "to": 7,  "direct": True,  "facing": 90,
+              "spread": 75, "obstruction": 10, "bay": True, "size": "large"}],
+         "doors": [{"edge": "top", "from": 10, "to": 13}],
+         "note": "3-pane bay facing north/northeast/EAST \u00b7 real morning sun, bright all day",
          "sun": {"observed": {"from": "06:25", "to": "12:50"},
                  "hoursAug": 6.4, "quality": "direct-morning",
                  "note": "CORRECTED: the old data called this indirect-only. The bay's east "
@@ -89,29 +105,34 @@ HOME = {
                      "note": "MEASURED: a thermometer on the bay shelf read 23C (73F) mid-afternoon, "
                              "well above the 62-69F previously assumed. The bay glass still runs cold "
                              "overnight, so treat this as the daytime high end of a wide daily swing."}},
-        {"id": "living", "name": "Living Room", "x": 6, "y": 4, "w": 6, "h": 4, "floor": "wood",
-         "light": 2, "windows": [{"edge": "bottom", "direct": False, "facing": 0, "spread": 75,
-                                  "obstruction": 10, "size": "large"}],
-         "note": "North slider only · the dimmest room that has a window at all",
+
+        {"id": "living", "name": "Living Room", "x": 18, "y": 12, "w": 18, "h": 12, "floor": "wood",
+         "light": 2,
+         "windows": [{"edge": "bottom", "from": 5, "to": 13, "direct": False, "facing": 0,
+                      "spread": 75, "obstruction": 10, "size": "large"}],
+         "doors": [{"edge": "left", "from": 3, "to": 6}],
+         "note": "North slider only \u00b7 the dimmest room that has a window at all",
          "sun": {"hoursAug": 0.5, "quality": "indirect",
                  "note": "North-facing, so barely half an hour of glancing sun at midsummer "
                          "dawn and none the rest of the year. Matches your read that this "
                          "room gets the least of the five."},
          "climate": {"tempF": [62, 68], "humidityPct": [45, 55], "airflow": "drafty",
                      "dryFactor": 0.85, "note": "North-facing and coolest indoor room; the slider leaks a draft."}},
-        {"id": "patio", "name": "Patio", "x": 6, "y": 8, "w": 6, "h": 2, "floor": "grass",
+
+        {"id": "patio", "name": "Patio", "x": 18, "y": 24, "w": 18, "h": 6, "floor": "grass",
          "light": 3, "outdoor": True,
-         "windows": [{"edge": "bottom", "direct": False, "facing": 0, "spread": 90,
-                     "obstruction": 12, "overhang": 35, "size": "open",
-                     "foliage": {"deciduous": True, "summer": 0.25, "bare": 0.85}}],
-         "note": "Outdoor · north-facing and overhung · little direct sun, huge sky view",
+         "windows": [{"edge": "bottom", "from": 1, "to": 17, "direct": False, "facing": 0,
+                      "spread": 90, "obstruction": 12, "overhang": 35, "size": "open",
+                      "foliage": {"deciduous": True, "summer": 0.25, "bare": 0.85}}],
+         "doors": [{"edge": "top", "from": 5, "to": 13}],
+         "note": "Outdoor \u00b7 north-facing and overhung \u00b7 little direct sun, huge sky view",
          "sun": {"hoursAug": 0.5, "quality": "indirect-bright",
                  "note": "CORRECTED down from 4. North-facing and shaded from above, so very "
-                         "little DIRECT sun — but open sky gives far more ambient light than "
+                         "little DIRECT sun \u2014 but open sky gives far more ambient light than "
                          "any indoor room, which is why it still reads bright."},
          "climate": {"tempF": [48, 88], "humidityPct": [30, 90], "airflow": "drafty",
                      "dryFactor": 1.6, "tracksWeather": True,
-                     "note": "Outdoors — tracks live weather. Wind and sun dry pots very fast."}},
+                     "note": "Outdoors \u2014 tracks live weather. Wind and sun dry pots very fast."}},
     ],
 }
 

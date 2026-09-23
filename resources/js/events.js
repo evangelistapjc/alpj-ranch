@@ -21,8 +21,7 @@ function onClick(e){
   if (UI.arrange && e.target.closest?.('[data-tray]')) return;
 
   if (UI.build){
-    const wb = e.target.closest?.('.wallbtn');
-    if (wb){ A.wallWindow(wb.dataset.wallroom, wb.dataset.wall); return; }
+    if (e.target.closest?.('[data-chunk]')) return;      // handled on pointerdown
     const rh = e.target.closest?.('[data-roomhit]');
     if (rh && !e.target.closest('[data-action]')){ A.selectRoom(rh.dataset.roomhit); return; }
   }
@@ -59,9 +58,14 @@ function onClick(e){
     case 'selroom':     A.selectRoom(d.room);                 break;
     case 'deselroom':   A.deselectRoom();                     break;
     case 'delroom':     A.deleteRoomAction(d.room);           break;
-    case 'togglewin':   A.wallWindow(d.room, d.wall);         break;
-    case 'toggledoor':  A.wallDoor(d.room, d.wall);           break;
-    case 'winsun':      A.wallSun(d.room, d.wall);            break;
+    case 'selwall':     A.selectWall(d.room, d.wall);         break;
+    case 'blocktool':   A.setBlockTool(d.tool);               break;
+    case 'applyblock':  A.applyBlock(d.room, d.wall);         break;
+    case 'clearsel':    A.clearSel();                         break;
+    case 'clearwall':   A.clearWallAction(d.room, d.wall);    break;
+    case 'delfeature':  A.deleteFeature(d.pair);              break;
+    case 'winsunpair':  A.toggleWinSun(d.pair);               break;
+    case 'splitpot':    A.splitPot(d.id);                     break;
     // journal sync between origins (phone ⇄ laptop)
     case 'exportjournal': A.exportJournalFile();              break;
     case 'importjournal': A.importJournalFile();              break;
@@ -75,6 +79,7 @@ function onChange(e){
   if (d.roomlight)   A.setRoomLight(d.roomlight, e.target.value);
   if (d.roomfloor)   A.setRoomFloor(d.roomfloor, e.target.value);
   if (d.roomoutdoor) A.setRoomOutdoor(d.roomoutdoor, e.target.checked);
+  if (d.joinpot)     A.combinePot(d.joinpot, e.target.value);
 }
 
 function onKey(e){
@@ -100,9 +105,14 @@ function onKey(e){
 function onPointerDown(e){
   if (e.button != null && e.button !== 0) return;         // left button / touch only
   if (UI.build){
-    const rs = e.target.closest?.('[data-resize]');
-    if (rs){ if (A.roomDragStart(e, rs.dataset.resize, 'resize')) e.preventDefault(); return; }
-    if (e.target.closest?.('.wallbtn')) return;           // let the click handler take it
+    // chunk strip in the side panel — click or drag across chunks
+    const ck = e.target.closest?.('[data-chunk]');
+    if (ck){ A.chunkDown(ck.dataset.room, ck.dataset.wall, +ck.dataset.chunk); e.preventDefault(); return; }
+    // wall grab bar resizes that side only
+    const wg = e.target.closest?.('[data-wallgrab]');
+    if (wg){ if (A.roomDragStart(e, wg.dataset.wallgrab, 'resize', wg.dataset.wall)) e.preventDefault(); return; }
+    const st = e.target.closest?.('[data-segroom]');
+    if (st){ A.selectWall(st.dataset.segroom, st.dataset.wall); e.preventDefault(); return; }
     const rh = e.target.closest?.('[data-roomhit]');
     if (rh){ if (A.roomDragStart(e, rh.dataset.roomhit, 'move')) e.preventDefault(); return; }
   }
@@ -113,11 +123,17 @@ function onPointerDown(e){
   if (t){ if (A.trayDragStart(e, t)) e.preventDefault(); }
 }
 function onPointerMove(e){
+  if (A.chunkDragging()){
+    const ck = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-chunk]');
+    if (ck) A.chunkOver(ck.dataset.room, ck.dataset.wall, +ck.dataset.chunk);
+    return;
+  }
   if (A.roomDragging()){ e.preventDefault(); A.roomDragMove(e); return; }
   if (A.dragging()){ e.preventDefault(); A.dragMove(e); return; }
   if (A.trayDragging()){ e.preventDefault(); A.trayDragMove(e); }
 }
 function onPointerUp(e){
+  if (A.chunkDragging()){ A.chunkUp(); return; }
   if (A.roomDragging()){ A.roomDragEnd(e); return; }
   if (A.dragging()){ A.dragEnd(e); return; }
   if (A.trayDragging()) A.trayDragEnd(e);

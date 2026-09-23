@@ -7,11 +7,12 @@ import { DB, UI, fmtDate, isoDay, relDay, nextCheck, daysUntil, interval,
          effInterval, actWord, isWateredToday, isFedToday, plant, waterLog,
          fedLog, notesLog, lastWatered, lastFed, hasHistory, isBacklog, loc, room,
          today0, movedPlants, placement, status, plantsIn, unplacedPlants,
-         potsIn, potMates, sharesPot } from './state.js';
+         potsIn, potMates, sharesPot, potId } from './state.js';
 import { assess, bestRooms, diagnose, sunToday, VERDICT, roomRanges } from './climate.js';
 import { wxLog, recentDryFactor, wateringWindow } from './weather.js';
 import { ZONE, STAGE, TABS, GROUPINGS, MAP_THEME, WMO, SLOTS_PER_WALL, WALLS } from './config.js';
-import { wallIsExterior, hasWindow, hasDoor, roomsEdited } from './rooms.js';
+import { wallIsExterior, hasWindow, hasDoor, roomsEdited, wallSegments, wallLength,
+         featuresOn, segmentAt, chunkBusy, WALLS as RWALLS, OPPOSITE } from './rooms.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -284,6 +285,33 @@ export function waterLogHTML(id){
   }).join('');
 }
 
+/* Shared-pot controls. Two plants in one container move together and share a
+   root zone, so repotting needs to be undoable from here rather than by hand. */
+export function potBlockHTML(p){
+  const mates = potMates(p).filter(q => q.id !== p.id);
+  if (mates.length){
+    return `<div class="potblock shared">
+      <div class="pb-top">🪴 <b>Shares a pot</b> with ${mates.map(m => m.name).join(', ')}</div>
+      <div class="pb-note">They move together on the map and drink from the same soil.</div>
+      <div class="pb-acts">
+        <button class="ghost tiny" data-action="splitpot" data-id="${p.id}">✂️ Give ${p.name.split(' ')[0]} its own pot</button>
+        ${mates.map(m => `<button class="ghost tiny" data-action="splitpot" data-id="${m.id}">✂️ Separate ${m.name.split(' ')[0]}</button>`).join('')}
+      </div></div>`;
+  }
+  // offer to combine with anything standing in the same room
+  const here = DB.plants.filter(q => q.id !== p.id && loc(q) === loc(p) && loc(p));
+  if (!here.length) return '';
+  return `<div class="potblock">
+    <div class="pb-top">🪴 In its own pot</div>
+    <div class="pb-acts">
+      <label class="pb-join">Combine with
+        <select data-joinpot="${p.id}">
+          <option value="">—</option>
+          ${here.map(q => `<option value="${q.id}">${q.name}</option>`).join('')}
+        </select></label>
+    </div></div>`;
+}
+
 function fitRow(label, f){
   const [emo, txt] = VERDICT[f.v];
   return `<div class="fit-row ${f.v}"><span class="fit-emo">${emo}</span>
@@ -306,6 +334,7 @@ export function renderModalBody(){
       <div class="note-box"><b>${p.headline}</b></div>
       ${st?`<div class="note-box ${p.medium==='water'?'water':''}">📍 <b>Right now:</b> ${st}</div>`:''}
       <div class="fit-banner ${fit.overall}">${VERDICT[fit.overall][0]} <b>${r?r.name:'Unplaced'}</b> — ${VERDICT[fit.overall][1].toLowerCase()} for this plant${moved?' <span class="moved-tag">moved</span>':''}</div>
+      ${potBlockHTML(p)}
       <div class="kv"><dt>Plot ID</dt><dd>${p.id}</dd><dt>Home</dt><dd>${r?r.name:loc(p)}</dd>
         <dt>Medium</dt><dd>${p.medium==='water'?'Rooting in water 💧':'Potted in soil 🪴'}</dd>
         <dt>Light zone</dt><dd>${ZONE[p.zone]} indirect${p.growLight?' · ⚡ grow light':''}</dd>
@@ -452,6 +481,30 @@ export function roomAt(x, y){
   return hit ? hit.id : null;
 }
 
+/* Pixel rect for a window/door, from its chunk range. `th` is wall thickness. */
+export function featureRect(room, f, T, th){
+  const from = f.from ?? 0, to = f.to ?? (from + 1);
+  const horiz = f.edge === 'top' || f.edge === 'bottom';
+  if (horiz){
+    const x = (room.x + from) * T;
+    const w = Math.max(2, (to - from) * T);
+    const y = (f.edge === 'top' ? room.y : room.y + room.h) * T - th/2;
+    return { x, y, w, h: th, horiz: true };
+  }
+  const y = (room.y + from) * T;
+  const h = Math.max(2, (to - from) * T);
+  const x = (f.edge === 'left' ? room.x : room.x + room.w) * T - th/2;
+  return { x, y, w: th, h, horiz: false };
+}
+
+/* Pixel point at a fractional chunk position along a wall. */
+export function chunkPoint(room, wall, chunk, T){
+  if (wall === 'top')    return { x: (room.x + chunk) * T, y: room.y * T + 9 };
+  if (wall === 'bottom') return { x: (room.x + chunk) * T, y: (room.y + room.h) * T - 9 };
+  if (wall === 'left')   return { x: room.x * T + 16, y: (room.y + chunk) * T };
+  return { x: (room.x + room.w) * T - 16, y: (room.y + chunk) * T };
+}
+
 function curTheme(){ return document.documentElement.getAttribute('data-theme') || 'stardew'; }
 
 function renderMapTools(){
@@ -473,40 +526,120 @@ function renderMapTools(){
    off the map without deleting anything. */
 export function renderRoomPanel(){
   const el = $('planttray'); if (!el) return;
+  el.classList.remove('arranging-tray');
+  el.classList.add('buildpanel');
   const r = DB.roomById[UI.selRoom];
+
   if (!r){
-    el.classList.remove('arranging-tray');
     el.innerHTML = `<div class="tray-head pixel">🏗️ Rooms</div>
-      <div class="tray-note">Tap a room on the map to edit it, or ➕ Add room.</div>
-      <div class="tray-list">${(DB.home.rooms||[]).map(x =>
-        `<div class="tray-item placed" data-action="selroom" data-room="${x.id}" role="button" tabindex="0">
-          <span class="tray-sprite">${x.outdoor?'🌳':'🏠'}</span>
-          <div class="tray-main"><div class="tray-name">${x.name}</div>
-          <div class="tray-sub">${x.w}×${x.h} · light ${x.light}</div></div></div>`).join('')}</div>`;
+      <div class="tray-note">Pick a room on the map, or add one. Drag a room to move it;
+        drag any wall to grow that side.</div>
+      <div class="roomlist">${(DB.home.rooms||[]).map(x => {
+        const wins = (x.windows||[]).length, drs = (x.doors||[]).length;
+        return `<div class="roomlist-item" data-action="selroom" data-room="${x.id}" role="button" tabindex="0">
+          <span class="rl-icon">${x.outdoor?'🌳':'🏠'}</span>
+          <div class="rl-main"><div class="rl-name">${x.name}</div>
+            <div class="rl-sub">${x.w}×${x.h} · light ${x.light} · ${wins}🪟 ${drs}🚪</div></div></div>`;
+      }).join('')}</div>`;
     return;
   }
-  const walls = WALLS.map(wl => {
-    const ext = wallIsExterior(r, wl);
-    return `<div class="wallrow"><b>${wl}</b><span class="wtag">${ext?'exterior':'interior'}</span>
-      <button class="ghost tiny" data-action="togglewin" data-room="${r.id}" data-wall="${wl}">${hasWindow(r,wl)?'🪟 remove':'🪟 window'}</button>
-      <button class="ghost tiny" data-action="toggledoor" data-room="${r.id}" data-wall="${wl}">${hasDoor(r,wl)?'🚪 remove':'🚪 door'}</button>
-      ${hasWindow(r,wl)?`<button class="ghost tiny" data-action="winsun" data-room="${r.id}" data-wall="${wl}">${(r.windows.find(w=>w.edge===wl)||{}).direct?'☀️ direct':'🌤️ indirect'}</button>`:''}
+
+  const wall = UI.selWall || 'top';
+  const len = wallLength(r, wall);
+  const segs = wallSegments(r, wall);
+  const feats = featuresOn(r, wall);
+
+  // which chunks are currently selected for the next insert
+  const sel = UI.wallSel && UI.wallSel.room === r.id && UI.wallSel.wall === wall
+    ? UI.wallSel : null;
+
+  const chunkCells = Array.from({ length: len }, (_, i) => {
+    const seg = segs.find(sg => i >= sg.from && i < sg.to);
+    const f = feats.find(ff => i >= (ff.from ?? 0) && i < (ff.to ?? 0));
+    const inSel = sel && i >= sel.from && i <= sel.to;
+    const cls = [
+      'chunk',
+      f ? ('has-' + f.kind) : '',
+      seg && seg.neighbor ? 'shared' : (seg && seg.exterior ? 'exterior' : 'hall'),
+      inSel ? 'sel' : ''
+    ].filter(Boolean).join(' ');
+    const glyph = f ? (f.kind === 'window' ? '🪟' : '🚪') : '';
+    return `<button class="${cls}" data-chunk="${i}" data-room="${r.id}" data-wall="${wall}"
+      title="chunk ${i+1} of ${len}${seg && seg.neighbor ? ' · shares with ' + (DB.roomById[seg.neighbor]?.name||seg.neighbor) : ''}">
+      <span class="cg">${glyph}</span><span class="cn">${i+1}</span></button>`;
+  }).join('');
+
+  const segRows = segs.map(sg => {
+    const nb = sg.neighbor ? (DB.roomById[sg.neighbor]?.name || sg.neighbor)
+                           : (sg.exterior ? 'Outside' : 'Hallway');
+    const kind = sg.neighbor ? 'shared' : (sg.exterior ? 'exterior' : 'hall');
+    return `<div class="segrow ${kind}">
+      <b>chunks ${sg.from+1}–${sg.to}</b>
+      <span>${sg.neighbor ? '↔ ' + nb : nb}</span>
+      <i>${sg.neighbor ? 'doors & windows pair automatically' : sg.exterior ? 'windows to the outside' : 'interior wall'}</i>
     </div>`;
   }).join('');
-  el.innerHTML = `<div class="tray-head pixel">🏗️ ${r.name}</div>
-    <div class="tray-note">Drag the room to move · corner handle to resize</div>
+
+  const featRows = feats.length ? feats.map(f => {
+    const seg = segmentAt(r, wall, f.from ?? 0);
+    const paired = seg && seg.neighbor ? ` ↔ ${DB.roomById[seg.neighbor]?.name || seg.neighbor}` : '';
+    return `<div class="featrow">
+      <span class="fk">${f.kind === 'window' ? '🪟' : '🚪'}</span>
+      <b>${f.kind}</b><span class="fr">${(f.from??0)+1}–${f.to??0}${paired}</span>
+      ${f.kind === 'window' ? `<button class="ghost tiny" data-action="winsunpair" data-pair="${f.pairId}">${f.direct?'☀️ direct':'🌤️ indirect'}</button>` : ''}
+      <button class="ghost tiny danger-t" data-action="delfeature" data-pair="${f.pairId}">✕</button>
+    </div>`;
+  }).join('') : '<div class="log-empty">Nothing on this wall yet.</div>';
+
+  el.innerHTML = `
+    <div class="tray-head pixel">🏗️ ${r.name}</div>
     <div class="roomform">
-      <label>Name<input id="rmName" type="text" value="${r.name.replace(/"/g,'&quot;')}" data-roomname="${r.id}"></label>
-      <label>Light 0–5<input id="rmLight" type="number" min="0" max="5" value="${r.light||0}" data-roomlight="${r.id}"></label>
-      <label>Floor<select id="rmFloor" data-roomfloor="${r.id}">
-        ${['wood','carpet','tile','grass'].map(f=>`<option value="${f}" ${r.floor===f?'selected':''}>${f}</option>`).join('')}
-      </select></label>
-      <label class="chk"><input type="checkbox" id="rmOutdoor" data-roomoutdoor="${r.id}" ${r.outdoor?'checked':''}> Outdoor</label>
-      <div class="wallset">${walls}</div>
-      <div class="roomacts">
-        <button class="ghost" data-action="deselroom">Done</button>
-        <button class="danger" data-action="delroom" data-room="${r.id}">🗑️ Delete room</button>
+      <div class="rf-row">
+        <label>Name<input type="text" value="${r.name.replace(/"/g,'&quot;')}" data-roomname="${r.id}"></label>
+        <label class="narrow">Light<input type="number" min="0" max="5" value="${r.light||0}" data-roomlight="${r.id}"></label>
       </div>
+      <div class="rf-row">
+        <label>Floor<select data-roomfloor="${r.id}">
+          ${['wood','carpet','tile','grass'].map(f=>`<option value="${f}" ${r.floor===f?'selected':''}>${f}</option>`).join('')}
+        </select></label>
+        <label class="chk"><input type="checkbox" data-roomoutdoor="${r.id}" ${r.outdoor?'checked':''}> Outdoor</label>
+      </div>
+      <div class="rf-size">${r.w} × ${r.h} chunks · at (${r.x}, ${r.y})</div>
+    </div>
+
+    <div class="walltabs">${RWALLS.map(wl => {
+      const n = featuresOn(r, wl).length;
+      const shared = wallSegments(r, wl).some(sg => sg.neighbor);
+      return `<button class="${wl===wall?'on':''}" data-action="selwall" data-room="${r.id}" data-wall="${wl}">
+        ${wl}${n?` <b>${n}</b>`:''}${shared?' <i>↔</i>':''}</button>`;
+    }).join('')}</div>
+
+    <div class="wallpane">
+      <div class="wp-head">
+        <b>${wall} wall</b> — ${len} chunks
+        <button class="ghost tiny" data-action="clearwall" data-room="${r.id}" data-wall="${wall}">Clear wall</button>
+      </div>
+
+      <div class="segs">${segRows}</div>
+
+      <div class="wp-tools">
+        <span>Add:</span>
+        <button class="${UI.blockTool==='window'?'sky':'ghost'} tiny" data-action="blocktool" data-tool="window">🪟 Window</button>
+        <button class="${UI.blockTool==='door'?'sky':'ghost'} tiny" data-action="blocktool" data-tool="door">🚪 Door</button>
+        ${sel ? `<button class="sky tiny" data-action="applyblock" data-room="${r.id}" data-wall="${wall}">Place on ${sel.to-sel.from+1} chunk${sel.to>sel.from?'s':''}</button>
+                 <button class="ghost tiny" data-action="clearsel">Cancel</button>` : ''}
+      </div>
+
+      <div class="chunkstrip ${wall==='left'||wall==='right'?'vert':''}">${chunkCells}</div>
+      <div class="wp-hint">Click a chunk, or drag across several. Pick a block first or after —
+        either order works.</div>
+
+      <div class="featlist">${featRows}</div>
+    </div>
+
+    <div class="roomacts">
+      <button class="ghost" data-action="deselroom">← All rooms</button>
+      <button class="danger" data-action="delroom" data-room="${r.id}">🗑️ Delete room</button>
     </div>`;
 }
 
@@ -570,16 +703,28 @@ export function renderHomeMap(){
     slots += slotsFor({ id:r.id, x, y, w, h }).map(sl =>
       `<circle class="slotdot" data-room="${sl.room}" data-wall="${sl.wall}" data-slot="${sl.slot}"
          cx="${sl.x}" cy="${sl.y}" r="7"/>`).join('');
-    (r.windows || []).forEach(wd => {
-      const th=6; let wx, wy, ww, wh;
-      if (wd.edge==='top'){ ww=w*0.6; wh=th; wx=x+(w-ww)/2; wy=y-th/2; }
-      else if (wd.edge==='bottom'){ ww=w*0.68; wh=th; wx=x+(w-ww)/2; wy=y+h-th/2; }
-      else if (wd.edge==='left'){ wh=h*0.6; ww=th; wx=x-th/2; wy=y+(h-wh)/2; }
-      else { wh=h*0.6; ww=th; wx=x+w-th/2; wy=y+(h-wh)/2; }
-      wins += `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="2" fill="#dff0f7" stroke="#8bb8cc" stroke-width="1.5"/>`;
-      if (wd.direct){ const sx=(wd.edge==='top'||wd.edge==='bottom')?wx+ww+6:wx+ww/2; const sy=(wd.edge==='top')?wy+8:wy-8;
-        wins += `<text x="${sx}" y="${sy}" font-size="12" text-anchor="middle">☀️</text>`; }
-    });
+    // Windows and doors draw at their real chunk extent, so what you see on the
+    // map is exactly the range configured in the wall editor.
+    const drawFeature = (f, kind) => {
+      const th = 6;
+      const g = featureRect(r, f, T, th);
+      if (!g) return;
+      if (kind === 'window'){
+        wins += `<rect class="mapwin" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="2"
+          fill="#dff0f7" stroke="#8bb8cc" stroke-width="1.5"/>`;
+        if (f.direct){
+          const sx = g.horiz ? g.x + g.w + 6 : g.x + g.w/2;
+          const sy = f.edge === 'top' ? g.y + 8 : g.y - 8;
+          wins += `<text x="${sx}" y="${sy}" font-size="12" text-anchor="middle">☀️</text>`;
+        }
+      } else {
+        // a doorway is a gap in the wall, drawn as a light break plus a swing arc
+        wins += `<rect class="mapdoor" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="1"
+          fill="#f4e2b8" stroke="#8a6a3e" stroke-width="1"/>`;
+      }
+    };
+    (r.windows || []).forEach(f => drawFeature(f, 'window'));
+    (r.doors   || []).forEach(f => drawFeature(f, 'door'));
     const dim = r.light <= 2 && !r.outdoor;
     labels += `<text x="${x+8}" y="${y+16}" font-family="'Pixelify Sans',monospace" font-size="12" font-weight="700" fill="${dim?'#f4ead9':'#3a2413'}" style="paint-order:stroke;stroke:${dim?'rgba(0,0,0,.5)':'rgba(255,255,255,.35)'};stroke-width:2px">${r.name}</text>`;
     labels += `<text x="${x+w-6}" y="${y+16}" text-anchor="end" font-size="9">${r.outdoor?'🌳':(r.light>0?'☀️'.repeat(r.light):'🌑')}</text>`;
@@ -589,18 +734,33 @@ export function renderHomeMap(){
       build += `<rect class="roomhit ${sel?'sel':''}" data-roomhit="${r.id}" x="${x}" y="${y}" width="${w}" height="${h}" fill="transparent"/>`;
       if (sel){
         build += `<rect class="roomsel" x="${x+2}" y="${y+2}" width="${w-4}" height="${h-4}" rx="3"/>`;
-        // corner handle resizes; the room body itself moves
-        build += `<rect class="roomresize" data-resize="${r.id}" x="${x+w-13}" y="${y+h-13}" width="13" height="13" rx="2"/>`;
-        // one control per wall: click toggles a window (exterior) or door (interior)
+
+        // One grab bar per wall — dragging a wall moves only that wall, so the
+        // room grows in the direction you pull instead of only bottom-right.
+        const GB = 9;
         WALLS.forEach(wl => {
-          let cx, cy;
-          if (wl==='top'){ cx=x+w/2; cy=y+9; } else if (wl==='bottom'){ cx=x+w/2; cy=y+h-9; }
-          else if (wl==='left'){ cx=x+9; cy=y+h/2; } else { cx=x+w-9; cy=y+h/2; }
-          const ext = wallIsExterior(r, wl), win = hasWindow(r, wl), door = hasDoor(r, wl);
-          const glyph = win ? '🪟' : door ? '🚪' : (ext ? '+' : '·');
-          build += `<g class="wallbtn ${ext?'ext':'int'} ${win||door?'on':''}" data-wall="${wl}" data-wallroom="${r.id}">
-            <circle cx="${cx}" cy="${cy}" r="8"/>
-            <text x="${cx}" y="${cy+3.5}" text-anchor="middle" font-size="9">${glyph}</text></g>`;
+          let bx, by, bw, bh;
+          if (wl === 'top'){ bx = x + GB; by = y - GB/2; bw = w - GB*2; bh = GB; }
+          else if (wl === 'bottom'){ bx = x + GB; by = y + h - GB/2; bw = w - GB*2; bh = GB; }
+          else if (wl === 'left'){ bx = x - GB/2; by = y + GB; bw = GB; bh = h - GB*2; }
+          else { bx = x + w - GB/2; by = y + GB; bw = GB; bh = h - GB*2; }
+          const active = UI.selWall === wl;
+          build += `<rect class="wallgrab ${wl} ${active?'on':''}" data-wallgrab="${r.id}" data-wall="${wl}"
+            x="${bx}" y="${by}" width="${Math.max(4,bw)}" height="${Math.max(4,bh)}" rx="2"/>`;
+        });
+
+        // Segment markers: one tick per stretch of wall, labelled with whatever
+        // is on the far side. This is what makes a two-neighbour wall legible.
+        WALLS.forEach(wl => {
+          wallSegments(r, wl).forEach(sg => {
+            const mid = (sg.from + sg.to) / 2;
+            const p = chunkPoint(r, wl, mid, T);
+            const nb = sg.neighbor ? (DB.roomById[sg.neighbor]?.name || sg.neighbor)
+                                   : (sg.exterior ? 'outside' : 'hall');
+            build += `<g class="segtag ${UI.selWall===wl?'on':''}" data-segroom="${r.id}" data-wall="${wl}">
+              <rect x="${p.x-16}" y="${p.y-6}" width="32" height="12" rx="6"/>
+              <text x="${p.x}" y="${p.y+3}" text-anchor="middle" font-size="7">${nb.slice(0,9)}</text></g>`;
+          });
         });
       }
     }

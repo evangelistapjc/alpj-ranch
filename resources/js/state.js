@@ -21,7 +21,9 @@ export const DB = { home:null, plants:[], roomById:{}, almanac:null, shippedRoom
 
 // --- transient UI state shared across modules ---
 export const UI = { view:'care', group:'light', openId:null, openTab:'overview',
-                    arrange:false, build:false, selRoom:null, editWater:null, dragId:null };
+                    arrange:false, build:false, editWater:null, dragId:null,
+                    // room builder
+                    selRoom:null, selWall:'top', wallSel:null, blockTool:'window' };
 
 // Storage lives in store.js; re-exported so existing imports keep working.
 export { Store } from './store.js';
@@ -146,7 +148,33 @@ export function swapPlacement(idA, idB){
    Two plants in one container are one physical object: they move together,
    occupy one slot, and share a root zone. `pot` on the plant record groups
    them; a plant with no `pot` is its own pot. */
-export function potId(p){ return p.pot || ('solo:' + p.id); }
+export function potId(p){
+  // The journal can override which pot a plant belongs to, so repotting is a
+  // two-click change rather than a JSON edit. `''` means "moved to its own pot"
+  // and must not fall back to the shipped value.
+  const v = lwwValue(ps(p.id).pot);
+  const eff = v === undefined || v === null ? p.pot : v;
+  return eff || ('solo:' + p.id);
+}
+export function setPot(id, potValue){ editPlant(id, s => { s.pot = lww(potValue); }); }
+
+/* Take a plant out of a shared container and give it its own. */
+export function splitFromPot(id){ setPot(id, ''); }
+
+/* Put a plant into the same container as another. */
+export function joinPot(id, otherId){
+  const other = plant(otherId); if (!other) return;
+  let group = potId(other);
+  if (group.startsWith('solo:')){
+    // the target is on its own — mint a real shared id and move it in too
+    group = 'pot-' + Math.random().toString(36).slice(2, 8);
+    setPot(otherId, group);
+  }
+  setPot(id, group);
+  const o = plant(otherId), me = plant(id);
+  setPlacement(id, { room: loc(o), wall: placement(o).wall,
+                     slot: placement(o).slot, order: placement(o).order });
+}
 export function potMates(p){ return DB.plants.filter(q => potId(q) === potId(p)); }
 export function sharesPot(p){ return potMates(p).length > 1; }
 
