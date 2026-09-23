@@ -112,24 +112,49 @@ from today — that's what puts it in the Backlog instead of hiding it.
 ## Local development
 
 ```bash
-# 1. Compile styles — Dart Sass (what CI uses):
-sass resources/scss/main.scss resources/css/stylesheet.css --watch
-#    …or without Node:  pip install libsass && python build_css.py
-
-# 2. Serve (fetch() needs http://, not file://)
-python3 -m http.server
-# → open http://localhost:8000/
+npm install     # once — pulls Dart Sass, the same compiler CI uses
+npm run dev     # rebuild everything, then serve on http://localhost:8000
 ```
 
-Edit a plant in `resources/data/plants/*.json` (or run `python3 build_data.py`
-to regenerate the whole set). Edit the Almanac in `resources/data/almanac.json`.
+| Script | Does |
+|---|---|
+| `npm run build` | data → sprites → CSS → service-worker stamp (in that order) |
+| `npm run dev` | `build`, then serves on :8000 |
+| `npm run serve` | serve only |
+| `npm run check` | exits 1 if `sw.js` is stale — used by CI |
+| `npm run bump` | patch bump (also `bump:minor`, `bump:major`) |
 
-> The service worker caches the app shell, so after editing JS bump `VERSION`
-> in `sw.js` (or unregister it in DevTools) or you'll keep loading the old
-> modules.
+Order matters: `build:sw` runs last because it hashes the output of the others.
+
+Without Node, every step has a Python equivalent — `python build_data.py`,
+`build_sprites.py`, `build_css.py` (libsass fallback), `build_sw.py`.
+
+Edit a plant in `resources/data/plants/*.json` (or `build_data.py` to regenerate
+the set). Edit the Almanac in `resources/data/almanac.json`.
+
+> The service worker caches the app shell. If the page looks stale, check the
+> version chip in the footer — if it isn't the version you just built, hard-refresh
+> (Ctrl+Shift+R) or unregister the worker in DevTools → Application.
+
+## Versioning
+
+`version.json` is the single source of truth; `build_sw.py` keeps `package.json`
+in sync and stamps `sw.js` as `alpj-v<semver>+<hash>`.
+
+The semver half is for humans and shows in the app footer. The hash half is
+derived from every file the service worker caches, and exists because the worker
+only refreshes its cache when the VERSION *string* changes — pure semver would
+silently ship stale assets any time someone forgot to bump.
+
+**You do not bump manually.** Every push to `master` bumps the patch version in
+CI, commits it back, and deploys. To bump further, put `[minor]` or `[major]` in
+the merge commit message, or run the workflow manually and pick a level.
+
+Because CI commits that bump, `git pull` after a merge before starting new work.
 
 ## Deploy
-Push to `main`. The workflow compiles SCSS and publishes to Pages.
+Push or merge to `master`. The workflow rebuilds, bumps the version, commits
+that bump back, and publishes to Pages — no manual step.
 One-time: **Settings → Pages → Source: GitHub Actions**.
 
 ## 🎨 Themes
