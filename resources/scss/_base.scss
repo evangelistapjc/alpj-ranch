@@ -18,8 +18,14 @@ body {
   box-shadow:inset 0 0 0 3px var(--wood-l), var(--shadow); position:relative;
 }
 .wrap {
-  max-width:1180px; margin:0 auto;
+  /* 75% of the viewport on desktop, with a floor so it never gets silly on a
+     wide monitor, and tall enough to actually use the screen. */
+  width:75%; max-width:1600px; min-width:min(100%, 960px); margin:0 auto;
+  min-height:90vh;
   padding:16px 14px 70px; padding-top:calc(16px + env(safe-area-inset-top));
+}
+@media (max-width:1100px){
+  .wrap { width:100%; min-width:0; }
 }
 
 /* header / farm sign */

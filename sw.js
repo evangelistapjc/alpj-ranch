@@ -1,6 +1,6 @@
 // ALPJ Ranch service worker — MUST live at the site root so its scope covers
 // the whole app. Cache-first for the app shell; network-first for JSON data.
-const VERSION = 'alpj-v5.1.2+f40e0ffcf0';
+const VERSION = 'alpj-v5.1.2+39d76c63cb';
 const CORE = [
   './',
   './index.html',

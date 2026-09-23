@@ -8,14 +8,17 @@ import { DB, UI, Store, today0, day0, isoDay, parseDayInput, isSameDay,
          loc, room, movedPlants, setPlacement,
          exportJournal, parseImport, mergeIntoStored, loadJournal,
          saveJournal, swapPlacement, plantsIn, unplacedPlants,
-         placement, potMates, sharesPot } from './state.js';
+         placement, potMates, sharesPot, splitFromPot, joinPot } from './state.js';
 import { renderCare, renderGrove, renderHomeMap, renderWeather, renderAlmanac,
          renderModalTabs, renderModalBody, logHTML, roomAt, slotAt,
          renderTray, sprite as spriteFor } from './views.js';
 import { currentWx } from './weather.js';
 import { assess, VERDICT } from './climate.js';
 import { applyRooms, patchRoom, deleteRoom as rmRoom, addRoom, clampRect,
-         toggleWindow, toggleDoor, cycleWindowSun } from './rooms.js';
+         tryMove, resizeByWall, wallSegments, wallLength, addFeature,
+         removeFeature, clearWall, toggleWindowDirect, chunkBusy,
+         resizeLimits, rectAfterResize, nearestFreeRect, collides,
+         featuresOn } from './rooms.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -138,28 +141,169 @@ export function moveTo(id, roomId){
    model, slot geometry and fit verdicts all follow with no extra wiring. */
 export function toggleBuild(){
   UI.build = !UI.build;
-  if (!UI.build) UI.selRoom = null;
+  if (!UI.build){ UI.selRoom = null; UI.wallSel = null; }
   if (UI.build) UI.arrange = false;          // the two modes fight over drags
   renderHomeMap();
-  toast(UI.build ? 'Room editing on - tap a room to select it' : 'Apartment saved');
+  toast(UI.build ? 'Room editing on — tap a room to select it' : 'Apartment saved');
 }
-export function selectRoom(id){ UI.selRoom = id; renderHomeMap(); }
-export function deselectRoom(){ UI.selRoom = null; renderHomeMap(); }
+export function selectRoom(id){
+  UI.selRoom = id; UI.selWall = UI.selWall || 'top'; UI.wallSel = null;
+  renderHomeMap();
+}
+export function deselectRoom(){ UI.selRoom = null; UI.wallSel = null; renderHomeMap(); }
+export function selectWall(roomId, wall){
+  UI.selRoom = roomId; UI.selWall = wall; UI.wallSel = null;
+  renderHomeMap();
+}
+export function setBlockTool(tool){
+  UI.blockTool = tool;
+  // Picking the tool AFTER highlighting should just place it — either order works.
+  if (UI.wallSel) return applyBlock(UI.wallSel.room, UI.wallSel.wall);
+  renderHomeMap();
+}
+
+/* Chunk selection. A click selects one chunk; click-drag extends the range.
+
+   Painting the highlight directly rather than re-rendering matters: a full
+   render rebuilds the strip under the cursor mid-drag, so the element the
+   pointer is over is destroyed and the drag only ever registers its first
+   chunk. Toggling classes keeps the nodes alive (and is far cheaper). */
+let chunkDrag = null;
+function paintChunkSel(){
+  const sel = UI.wallSel;
+  document.querySelectorAll('.chunkstrip .chunk').forEach(el => {
+    const i = +el.dataset.chunk;
+    const on = sel && el.dataset.room === sel.room && el.dataset.wall === sel.wall
+               && i >= sel.from && i <= sel.to;
+    el.classList.toggle('sel', !!on);
+  });
+  const n = sel ? (sel.to - sel.from + 1) : 0;
+  const btn = document.querySelector('[data-action="applyblock"]');
+  if (btn) btn.textContent = `Place on ${n} chunk${n === 1 ? '' : 's'}`;
+}
+
+export function chunkDown(roomId, wall, chunk){
+  const r = DB.roomById[roomId];
+  // Clicking a chunk that already holds something selects THAT block, so it can
+  // be extended or removed without hunting for it in the list below.
+  const hit = r && featuresOn(r, wall).find(f => chunk >= (f.from ?? 0) && chunk < (f.to ?? 0));
+  if (hit){
+    UI.selRoom = roomId; UI.selWall = wall;
+    UI.featSel = UI.featSel === hit.pairId ? null : hit.pairId;
+    UI.wallSel = null;
+    renderHomeMap();
+    return;
+  }
+  UI.featSel = null;
+  const switching = UI.selRoom !== roomId || UI.selWall !== wall;
+  chunkDrag = { room: roomId, wall, anchor: chunk };
+  UI.selRoom = roomId; UI.selWall = wall;
+  UI.wallSel = { room: roomId, wall, from: chunk, to: chunk };
+  // only a full render when the wall itself changed; otherwise just repaint
+  if (switching) renderHomeMap(); else { paintChunkSel(); ensureApplyButton(); }
+}
+export function chunkOver(roomId, wall, chunk){
+  if (!chunkDrag || chunkDrag.room !== roomId || chunkDrag.wall !== wall) return;
+  const from = Math.min(chunkDrag.anchor, chunk), to = Math.max(chunkDrag.anchor, chunk);
+  if (UI.wallSel && UI.wallSel.from === from && UI.wallSel.to === to) return;
+  UI.wallSel = { room: roomId, wall, from, to };
+  paintChunkSel();
+}
+export function chunkUp(){ chunkDrag = null; renderHomeMap(); }
+
+/* The Place/Cancel pair only exists once something is highlighted, and the
+   selection is now painted without a re-render — so add them on demand. */
+function ensureApplyButton(){
+  const tools = document.querySelector('.wp-tools');
+  if (!tools || !UI.wallSel || tools.querySelector('[data-action="applyblock"]')) return;
+  const n = UI.wallSel.to - UI.wallSel.from + 1;
+  tools.insertAdjacentHTML('beforeend',
+    `<button class="sky tiny" data-action="applyblock" data-room="${UI.wallSel.room}" data-wall="${UI.wallSel.wall}">Place on ${n} chunk${n===1?'':'s'}</button>
+     <button class="ghost tiny" data-action="clearsel">Cancel</button>`);
+}
+export function chunkDragging(){ return !!chunkDrag; }
+export function clearSel(){ UI.wallSel = null; UI.featSel = null; renderHomeMap(); }
+
+/* Grow an already-placed block to cover the highlighted chunks too. */
+export function extendFeature(roomId, wall, pairId){
+  const r = DB.roomById[roomId]; if (!r) return;
+  const sel = UI.wallSel;
+  if (!sel || sel.room !== roomId || sel.wall !== wall){
+    toast('Highlight the chunks to add first'); return;
+  }
+  const f = featuresOn(r, wall).find(x => x.pairId === pairId);
+  if (!f) return;
+  const from = Math.min(f.from ?? 0, sel.from), to = Math.max(f.to ?? 0, sel.to + 1);
+  for (let c = from; c < to; c++){
+    const other = featuresOn(r, wall).find(x => x.pairId !== pairId &&
+      c >= (x.from ?? 0) && c < (x.to ?? 0));
+    if (other){ toast('Something else is in the way at chunk ' + (c + 1)); return; }
+  }
+  const kind = f.kind;
+  const direct = !!f.direct;
+  removeFeature(pairId);
+  addFeature(roomId, wall, from, to, kind, { direct });
+  UI.wallSel = null; UI.featSel = null;
+  renderHomeMap(); renderCare();
+  toast(`${kind === 'window' ? '🪟' : '🚪'} extended to chunks ${from + 1}–${to}`);
+}
+
+export function applyBlock(roomId, wall){
+  const sel = UI.wallSel;
+  if (!sel || sel.room !== roomId || sel.wall !== wall){
+    toast('Highlight part of the wall first'); return;
+  }
+  const r = DB.roomById[roomId]; if (!r) return;
+  // refuse to stack two blocks on the same chunk
+  for (let c = sel.from; c <= sel.to; c++){
+    if (chunkBusy(r, wall, c)){
+      toast('Something is already on chunk ' + (c + 1)); return;
+    }
+  }
+  const kind = UI.blockTool || 'window';
+  const segs = wallSegments(r, wall);
+  const touchesNeighbour = segs.some(sg => sg.neighbor &&
+    Math.max(sg.from, sel.from) < Math.min(sg.to, sel.to + 1));
+
+  addFeature(roomId, wall, sel.from, sel.to + 1, kind);
+  UI.wallSel = null;
+  renderHomeMap(); renderCare();
+  toast(touchesNeighbour
+    ? `${kind === 'window' ? '🪟' : '🚪'} added — paired to the room on the other side`
+    : `${kind === 'window' ? '🪟' : '🚪'} added`);
+}
+
+export function deleteFeature(pairId){
+  removeFeature(pairId);
+  renderHomeMap(); renderCare();
+  toast('Removed from both sides');
+}
+export function clearWallAction(roomId, wall){
+  clearWall(roomId, wall);
+  UI.wallSel = null;
+  renderHomeMap(); renderCare();
+  toast(`${wall} wall cleared — the wall itself stays`);
+}
+export function toggleWinSun(pairId){
+  toggleWindowDirect(pairId);
+  renderHomeMap(); renderCare();
+}
 
 export function addNewRoom(){
   const g = DB.home.grid;
   let x = 0, y = 0, found = false;
-  for (let ty = 0; ty <= g.rows - 3 && !found; ty++){
-    for (let tx = 0; tx <= g.cols - 3 && !found; tx++){
+  for (let ty = 0; ty <= g.rows - 6 && !found; ty++){
+    for (let tx = 0; tx <= g.cols - 6 && !found; tx++){
       const clash = (DB.home.rooms || []).some(r =>
-        tx < r.x + r.w && tx + 3 > r.x && ty < r.y + r.h && ty + 3 > r.y);
+        tx < r.x + r.w && tx + 6 > r.x && ty < r.y + r.h && ty + 6 > r.y);
       if (!clash){ x = tx; y = ty; found = true; }
     }
   }
-  const id = addRoom({ name:'New Room', x, y, w:3, h:3 });
-  UI.selRoom = id;
+  if (!found){ toast('No free space — shrink or move a room first'); return; }
+  const id = addRoom({ name:'New Room', x, y, w:6, h:6 });
+  UI.selRoom = id; UI.selWall = 'top';
   renderHomeMap(); renderCare();
-  toast('Room added - name it in the panel');
+  toast('Room added — name it in the panel');
 }
 
 export function deleteRoomAction(id){
@@ -169,10 +313,10 @@ export function deleteRoomAction(id){
   // anything standing in it would otherwise point at a room that no longer
   // exists, so lift those plants into the tray rather than orphaning them
   here.forEach(p => setPlacement(p.id, { room:null, wall:null, slot:null, order:null }));
-  UI.selRoom = null;
+  UI.selRoom = null; UI.wallSel = null;
   renderHomeMap(); renderCare();
   toast(here.length
-    ? r.name + ' deleted - ' + here.length + ' plant(s) moved to the tray'
+    ? r.name + ' deleted — ' + here.length + ' plant(s) moved to the tray'
     : r.name + ' deleted');
 }
 
@@ -186,45 +330,130 @@ export function setRoomLight(id, v){
 }
 export function setRoomFloor(id, v){ patchRoom(id, { floor: v }); renderHomeMap(); }
 export function setRoomOutdoor(id, on){ patchRoom(id, { outdoor: !!on }); renderHomeMap(); renderCare(); }
-export function wallWindow(id, wall){ toggleWindow(id, wall); renderHomeMap(); renderCare(); }
-export function wallDoor(id, wall){ toggleDoor(id, wall); renderHomeMap(); }
-export function wallSun(id, wall){ cycleWindowSun(id, wall); renderHomeMap(); renderCare(); }
 
-/* --- drag a room body to move it, or its corner handle to resize --- */
+/* --- drag a room to move it, or a wall bar to resize that side ---
+   Nothing is written while the pointer is down. A ghost rectangle previews
+   where the room would land and the real geometry is committed on release.
+   Two reasons: patching every frame made a resize crawl one chunk at a time
+   because a blocked step aborted the rest of the drag, and a room that starts
+   overlapping could never be dragged free at all. */
 let roomDrag = null;
-export function roomDragStart(e, id, mode){
+
+function setGhost(rect, ok){
+  const g = $('ghostRect'); if (!g) return;
+  const T = DB.home.grid.tile;
+  g.setAttribute('x', rect.x * T); g.setAttribute('y', rect.y * T);
+  g.setAttribute('width', rect.w * T); g.setAttribute('height', rect.h * T);
+  g.setAttribute('class', 'ghost ' + (ok ? 'ok' : 'bad'));
+  g.style.display = '';
+  const lab = $('ghostLabel');
+  if (lab){
+    lab.setAttribute('x', rect.x * T + rect.w * T / 2);
+    lab.setAttribute('y', rect.y * T + rect.h * T / 2 + 4);
+    lab.textContent = `${rect.w} × ${rect.h}`;
+    lab.style.display = '';
+  }
+}
+function hideGhost(){
+  const g = $('ghostRect'); if (g) g.style.display = 'none';
+  const l = $('ghostLabel'); if (l) l.style.display = 'none';
+}
+
+export function roomDragStart(e, id, mode, wall){
   if (!UI.build) return false;
   const svg = $('mapsvg'); if (!svg) return false;
   const r = DB.roomById[id]; if (!r) return false;
   const p = toSvg(svg, e.clientX, e.clientY);
-  roomDrag = { id, mode, svg, startX:p.x, startY:p.y,
-               orig:{ x:r.x, y:r.y, w:r.w, h:r.h }, moved:false };
+  roomDrag = { id, mode, wall, svg, startX:p.x, startY:p.y,
+               orig:{ x:r.x, y:r.y, w:r.w, h:r.h },
+               limits: mode === 'resize' ? resizeLimits(r, wall) : null,
+               ghost: null, moved:false };
   UI.selRoom = id;
+  if (wall) UI.selWall = wall;
   return true;
 }
+
 export function roomDragMove(e){
   if (!roomDrag) return;
-  const T = DB.home.grid.tile;
+  const T = DB.home.grid.tile, g = DB.home.grid;
   const p = toSvg(roomDrag.svg, e.clientX, e.clientY);
   const dx = (p.x - roomDrag.startX) / T, dy = (p.y - roomDrag.startY) / T;
   if (!roomDrag.moved && Math.abs(dx) < 0.4 && Math.abs(dy) < 0.4) return;
   roomDrag.moved = true;
   const o = roomDrag.orig;
-  const next = roomDrag.mode === 'resize'
-    ? clampRect({ x:o.x, y:o.y, w:o.w + dx, h:o.h + dy })
-    : clampRect({ x:o.x + dx, y:o.y + dy, w:o.w, h:o.h });
-  const cur = DB.roomById[roomDrag.id];
-  if (cur.x !== next.x || cur.y !== next.y || cur.w !== next.w || cur.h !== next.h){
-    patchRoom(roomDrag.id, next);
-    renderHomeMap();
+
+  let rect, ok = true;
+  if (roomDrag.mode === 'resize'){
+    const raw = (roomDrag.wall === 'left' || roomDrag.wall === 'right') ? dx : dy;
+    // clamp to the legal span so the phantom slides freely and simply stops
+    // at whatever it would have collided with
+    const L = roomDrag.limits;
+    const d = Math.max(L.min, Math.min(L.max, Math.round(raw)));
+    rect = rectAfterResize(o, roomDrag.wall, d);
+  } else {
+    rect = { x: Math.round(o.x + dx), y: Math.round(o.y + dy), w:o.w, h:o.h };
+    rect.x = Math.max(0, Math.min(g.cols - rect.w, rect.x));
+    rect.y = Math.max(0, Math.min(g.rows - rect.h, rect.y));
+    ok = !collides(rect, roomDrag.id);
   }
+
+  roomDrag.ghost = rect;
+  roomDrag.ok = ok;
+  setGhost(rect, ok);
 }
+
 export function roomDragEnd(){
   if (!roomDrag) return;
   const d = roomDrag; roomDrag = null;
-  if (d.moved){ renderCare(); toast('Room updated'); } else { renderHomeMap(); }
+  hideGhost();
+  if (!d.moved || !d.ghost){ renderHomeMap(); return; }
+
+  let rect = d.ghost;
+  if (collides(rect, d.id)){
+    // dropped on top of something — settle at the closest spot that fits
+    const free = nearestFreeRect(rect, d.id);
+    if (!free){ toast('No room for that — nothing changed'); renderHomeMap(); return; }
+    rect = free;
+    patchRoom(d.id, rect);
+    renderHomeMap(); renderCare();
+    toast(`Moved to the nearest free spot (${rect.x}, ${rect.y})`);
+    return;
+  }
+  patchRoom(d.id, rect);
+  renderHomeMap(); renderCare();
+  toast(d.mode === 'resize' ? `Resized to ${rect.w} × ${rect.h}` : 'Room moved');
 }
 export function roomDragging(){ return !!roomDrag; }
+
+/* Directly set width/height from the panel inputs. */
+export function setRoomSize(id, dim, value){
+  const r = DB.roomById[id]; if (!r) return;
+  const n = Math.max(2, parseInt(value, 10) || 2);
+  const rect = { ...{ x:r.x, y:r.y, w:r.w, h:r.h }, [dim]: n };
+  const g = DB.home.grid;
+  if (rect.x + rect.w > g.cols || rect.y + rect.h > g.rows || collides(rect, id)){
+    toast('That size would overlap — trim the neighbour first');
+    renderHomeMap(); return;
+  }
+  patchRoom(id, rect);
+  renderHomeMap(); renderCare();
+}
+
+/* ---------------- shared pots ---------------- */
+export function splitPot(id){
+  const p = plant(id);
+  const had = potMates(p).filter(q => q.id !== id).map(q => q.name);
+  splitFromPot(id);
+  refresh(id);
+  toast(had.length ? `✂️ ${p.name} separated from ${had.join(', ')}` : `${p.name} already had its own pot`);
+}
+export function combinePot(id, otherId){
+  if (!otherId) return;
+  const p = plant(id), o = plant(otherId);
+  joinPot(id, otherId);
+  refresh(id);
+  toast(`🪴 ${p.name} now shares a pot with ${o.name}`);
+}
 
 export function toggleArrange(){
   UI.arrange = !UI.arrange;
