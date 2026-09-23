@@ -11,17 +11,15 @@
     "build:css": "sass resources/scss/main.scss resources/css/stylesheet.css --style=compressed --no-source-map",
     "build:css:py": "python build_css.py",
     "build:sw": "python build_sw.py",
-
     "serve": "python -m http.server 8000",
     "dev": "npm run build && npm run serve",
-
     "bump": "python build_sw.py --bump patch",
     "bump:minor": "python build_sw.py --bump minor",
     "bump:major": "python build_sw.py --bump major",
     "release": "npm run build:data && npm run build:sprites && npm run build:css && npm run bump",
-
     "check": "python build_sw.py --check",
-    "verify": "npm run build && npm run check"
+    "verify": "npm run build && npm run check && npm test",
+    "test": "node test/rooms.test.mjs"
   },
   "devDependencies": {
     "sass": "^1.77.0"
