@@ -29,7 +29,7 @@
 // and not in the closet.
 // ===========================================================================
 import { DB } from './state.js';
-import { loadJournal, saveJournal, lww, lwwValue } from './sync.js';
+import { loadJournal, saveJournal, lww, lwwValue, migrateRoomGrid } from './sync.js';
 import { edgeFacing } from './sun.js';
 
 export const MIN_W = 2, MIN_H = 2;
@@ -39,25 +39,49 @@ export const OPPOSITE = { top: 'bottom', bottom: 'top', left: 'right', right: 'l
 /* ---------------- overlay resolution ---------------- */
 export function roomOverrides(){ return loadJournal().rooms || {}; }
 
+/* Run the pending v3 geometry migration once, as soon as we know the grid. */
+function ensureGridMigrated(){
+  const j = loadJournal();
+  if (!j._needsGridMigration || !DB.home?.grid) return;
+  migrateRoomGrid(j, DB.home.grid);
+  delete j._needsGridMigration;
+  saveJournal(j);
+}
+
 export function resolveRooms(){
+  ensureGridMigrated();
   const over = roomOverrides();
   const shipped = DB.shippedRooms || [];
   const out = [];
 
   shipped.forEach(r => {
-    const v = lwwValue(over[r.id]);
+    const v = rescaleIfStale(lwwValue(over[r.id]));
     if (v && v.deleted) return;
     out.push(v ? { ...r, ...v } : { ...r });
   });
 
   Object.keys(over).forEach(id => {
-    const v = lwwValue(over[id]);
+    const v = rescaleIfStale(lwwValue(over[id]));
     if (!v || v.deleted) return;
     if (shipped.some(r => r.id === id)) return;
     out.push({ ...v, id });
   });
 
   return out;
+}
+
+/* Belt and braces: if a cell is stamped with a different grid than the one
+   loaded, scale it on the way out rather than drawing it in the wrong space. */
+function rescaleIfStale(v){
+  const g = DB.home?.grid;
+  if (!v || v.deleted || !g || !v.grid) return v;
+  if (v.grid.cols === g.cols && v.grid.rows === g.rows) return v;
+  const sx = g.cols / v.grid.cols, sy = g.rows / v.grid.rows;
+  return { ...v, grid: { cols:g.cols, rows:g.rows },
+    x: typeof v.x === 'number' ? Math.round(v.x * sx) : v.x,
+    y: typeof v.y === 'number' ? Math.round(v.y * sy) : v.y,
+    w: typeof v.w === 'number' ? Math.max(2, Math.round(v.w * sx)) : v.w,
+    h: typeof v.h === 'number' ? Math.max(2, Math.round(v.h * sy)) : v.h };
 }
 
 export function applyRooms(){
@@ -71,7 +95,8 @@ export function patchRoom(id, patch){
   const j = loadJournal();
   j.rooms = j.rooms || {};
   const cur = lwwValue(j.rooms[id]) || {};
-  j.rooms[id] = lww({ ...cur, ...patch });
+  const g = DB.home?.grid;
+  j.rooms[id] = lww({ ...cur, ...patch, grid: g ? { cols:g.cols, rows:g.rows } : cur.grid });
   saveJournal(j);
   return applyRooms();
 }
@@ -81,9 +106,10 @@ export function patchRoom(id, patch){
 export function patchRooms(patches){
   const j = loadJournal();
   j.rooms = j.rooms || {};
+  const g = DB.home?.grid;
   Object.entries(patches).forEach(([id, patch]) => {
     const cur = lwwValue(j.rooms[id]) || {};
-    j.rooms[id] = lww({ ...cur, ...patch });
+    j.rooms[id] = lww({ ...cur, ...patch, grid: g ? { cols:g.cols, rows:g.rows } : cur.grid });
   });
   saveJournal(j);
   return applyRooms();

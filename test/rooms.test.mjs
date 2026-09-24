@@ -130,5 +130,40 @@ const already = R.nearestFreeRect({ x: 9, y: 9, w: 6, h: 6 }, '__none__');
 ok('  ... and leaves an already-valid position untouched',
    already && already.x === 9 && already.y === 9, JSON.stringify(already));
 
+console.log('\n--- stale 12x10 room overrides migrate to the current grid ---');
+{
+  const SY = await import(BASE + 'sync.js');
+  // exactly what a v5.1.2 user would have saved: geometry in the old grid space
+  const stale = { v: 3, device: 'old', plants: {}, rooms: {
+    bedroom: { v: { x: 0, y: 7, w: 6, h: 3,
+                    windows: [{ edge: 'bottom', from: 1, to: 4 }] },
+               at: '2020-01-01T00:00:00Z', by: 'old' },
+    living:  { v: { x: 6, y: 4, w: 6, h: 4 }, at: '2020-01-01T00:00:00Z', by: 'old' },
+    closet:  { v: { deleted: true },          at: '2020-01-01T00:00:00Z', by: 'old' }
+  }};
+  SY.migrateRoomGrid(stale, { cols: 36, rows: 30 });
+  const bed = stale.rooms.bedroom.v, liv = stale.rooms.living.v;
+  console.log('  bedroom ->', JSON.stringify({ x:bed.x, y:bed.y, w:bed.w, h:bed.h }));
+  console.log('  living  ->', JSON.stringify({ x:liv.x, y:liv.y, w:liv.w, h:liv.h }));
+  ok('a stale room scales back to its real footprint',
+     bed.x === 0 && bed.y === 21 && bed.w === 18 && bed.h === 9, JSON.stringify(bed));
+  ok('  ... landing exactly on the shipped plan again',
+     bed.x === DB.roomById.bedroom.x && bed.w === DB.roomById.bedroom.w &&
+     bed.y === DB.roomById.bedroom.y && bed.h === DB.roomById.bedroom.h);
+  ok('a second stale room scales too',
+     liv.x === 18 && liv.y === 12 && liv.w === 18 && liv.h === 12, JSON.stringify(liv));
+  ok('window chunk ranges scale along their own wall',
+     bed.windows[0].from === 3 && bed.windows[0].to === 12,
+     JSON.stringify(bed.windows[0]));
+  ok('tombstones are left alone', stale.rooms.closet.v.deleted === true);
+  ok('each migrated cell is stamped with the grid it now belongs to',
+     bed.grid.cols === 36 && bed.grid.rows === 30);
+
+  // a second pass must not scale everything a second time
+  SY.migrateRoomGrid(stale, { cols: 36, rows: 30 });
+  ok('migration is idempotent',
+     stale.rooms.bedroom.v.w === 18, JSON.stringify(stale.rooms.bedroom.v));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

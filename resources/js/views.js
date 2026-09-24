@@ -764,13 +764,13 @@ export function renderHomeMap(){
         // Sit the bars just INSIDE the wall rather than straddling it: on the
         // line they painted over the windows, so an edit only became visible
         // once the room was deselected.
-        const GB = 8, IN = 4;
+        const GB = 5, IN = 3, END = 14;
         WALLS.forEach(wl => {
           let bx, by, bw, bh;
-          if (wl === 'top'){ bx = x + GB; by = y + IN; bw = w - GB*2; bh = GB; }
-          else if (wl === 'bottom'){ bx = x + GB; by = y + h - IN - GB; bw = w - GB*2; bh = GB; }
-          else if (wl === 'left'){ bx = x + IN; by = y + GB; bw = GB; bh = h - GB*2; }
-          else { bx = x + w - IN - GB; by = y + GB; bw = GB; bh = h - GB*2; }
+          if (wl === 'top'){ bx = x + END; by = y + IN; bw = w - END*2; bh = GB; }
+          else if (wl === 'bottom'){ bx = x + END; by = y + h - IN - GB; bw = w - END*2; bh = GB; }
+          else if (wl === 'left'){ bx = x + IN; by = y + END; bw = GB; bh = h - END*2; }
+          else { bx = x + w - IN - GB; by = y + END; bw = GB; bh = h - END*2; }
           const active = UI.selWall === wl;
           build += `<rect class="wallgrab ${wl} ${active?'on':''}" data-wallgrab="${r.id}" data-wall="${wl}"
             x="${bx}" y="${by}" width="${Math.max(4,bw)}" height="${Math.max(4,bh)}" rx="2"/>`;
@@ -778,7 +778,7 @@ export function renderHomeMap(){
 
         // Segment markers: one tick per stretch of wall, labelled with whatever
         // is on the far side. This is what makes a two-neighbour wall legible.
-        WALLS.forEach(wl => {
+        [UI.selWall || 'top'].forEach(wl => {
           wallSegments(r, wl).forEach(sg => {
             const mid = (sg.from + sg.to) / 2;
             const p = chunkPoint(r, wl, mid, T);
