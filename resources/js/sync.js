@@ -31,7 +31,7 @@
 import { Store } from './store.js';
 
 export const JOURNAL_KEY = 'alpj_journal';
-export const JOURNAL_V = 3;
+export const JOURNAL_V = 4;
 const LEGACY_KEY = 'alpj_state';
 
 /* ---------------- ids ---------------- */
@@ -172,15 +172,63 @@ export function diffStats(before, after){
            plants: Object.keys(after.plants || {}).length };
 }
 
+/* The grid the room builder shipped on before the 36x30 rework. Room overrides
+   written then hold coordinates in THAT space; read as 36x30 they collapse into
+   a cluster of tiny rooms in the top-left corner. */
+export const LEGACY_GRID = { cols: 12, rows: 10 };
+
 /* ---------------- migration ----------------
    v1  : { MON: { lastWatered, prevWatered, lastFed, log } }
    v2  : { MON: { waterLog:[{t,kind,wx}], fedLog:[{t}], location, log, _v:2 } }
    v3  : this module's envelope — entries carry ids, placement is LWW.
    Nothing is discarded; the v2 blob is kept under a backup key just in case. */
+/* v3 -> v4: rescale room geometry authored against the old grid.
+
+   The builder shipped on a 12x10 grid, then the grid became 36x30. Anyone who
+   edited a room in between has coordinates in the old space, and resolveRooms()
+   layers them straight on top of the new plan — which is why those rooms
+   rendered tiny and stacked in the corner while untouched rooms looked right.
+
+   Scaling by the ratio puts them back where they were. Every cell is stamped
+   with the grid it belongs to from now on, so the next grid change migrates
+   itself instead of silently corrupting the map. */
+export function migrateRoomGrid(journal, grid){
+  if (!journal || !journal.rooms || !grid) return journal;
+  const sx = grid.cols / LEGACY_GRID.cols, sy = grid.rows / LEGACY_GRID.rows;
+  Object.keys(journal.rooms).forEach(id => {
+    const cell = journal.rooms[id];
+    const v = lwwValue(cell);
+    if (!v || v.deleted) return;
+    if (v.grid) return;                       // already stamped, nothing to do
+    const out = { ...v, grid: { cols: grid.cols, rows: grid.rows } };
+    if (typeof v.x === 'number') out.x = Math.round(v.x * sx);
+    if (typeof v.y === 'number') out.y = Math.round(v.y * sy);
+    if (typeof v.w === 'number') out.w = Math.max(2, Math.round(v.w * sx));
+    if (typeof v.h === 'number') out.h = Math.max(2, Math.round(v.h * sy));
+    // chunk ranges on windows/doors scale along their own wall's axis
+    const scaleFeatures = (list) => (list || []).map(f => {
+      const horiz = f.edge === 'top' || f.edge === 'bottom';
+      const k = horiz ? sx : sy;
+      return { ...f,
+        from: typeof f.from === 'number' ? Math.round(f.from * k) : f.from,
+        to:   typeof f.to   === 'number' ? Math.round(f.to   * k) : f.to };
+    });
+    if (v.windows) out.windows = scaleFeatures(v.windows);
+    if (v.doors)   out.doors   = scaleFeatures(v.doors);
+    journal.rooms[id] = { ...cell, v: out };
+  });
+  return journal;
+}
+
 export function migrate(old){
   const legacy = old || Store.get(LEGACY_KEY);
   if (!legacy) return null;
   if (legacy.v === JOURNAL_V) return legacy;
+  // a v3 journal only needs its room geometry rescaling; plant data is unchanged
+  if (legacy.v === 3){
+    Store.set('alpj_journal_v3_backup', legacy);
+    return { ...legacy, v: JOURNAL_V, _needsGridMigration: true };
+  }
 
   Store.set('alpj_state_backup', legacy);
   const j = emptyJournal();
