@@ -125,15 +125,18 @@ function onPointerDown(e){
   const t = e.target.closest?.('[data-tray]');
   if (t){ if (A.trayDragStart(e, t)) e.preventDefault(); }
 }
+/* preventDefault only once a gesture has genuinely started moving. Calling it
+   unconditionally meant a single stuck drag suppressed the click event for the
+   whole document, leaving the UI dead with nothing in the console. */
 function onPointerMove(e){
   if (A.chunkDragging()){
     const ck = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-chunk]');
     if (ck) A.chunkOver(ck.dataset.room, ck.dataset.wall, +ck.dataset.chunk);
     return;
   }
-  if (A.roomDragging()){ e.preventDefault(); A.roomDragMove(e); return; }
-  if (A.dragging()){ e.preventDefault(); A.dragMove(e); return; }
-  if (A.trayDragging()){ e.preventDefault(); A.trayDragMove(e); }
+  if (A.roomDragging()){ if (A.roomDragMove(e)) e.preventDefault(); return; }
+  if (A.dragging()){ if (A.dragMove(e)) e.preventDefault(); return; }
+  if (A.trayDragging()){ if (A.trayDragMove(e)) e.preventDefault(); }
 }
 function onPointerUp(e){
   if (A.chunkDragging()){ A.chunkUp(); return; }
@@ -149,5 +152,9 @@ export function wireEvents(){
   document.addEventListener('pointerdown', onPointerDown);
   document.addEventListener('pointermove', onPointerMove, { passive:false });
   document.addEventListener('pointerup', onPointerUp);
-  document.addEventListener('pointercancel', onPointerUp);
+  // Safety nets. Any of these means the gesture is over whether or not a
+  // pointerup reached us, so nothing can be left half-dragging.
+  document.addEventListener('pointercancel', () => A.cancelAllDrags());
+  document.addEventListener('lostpointercapture', () => A.cancelAllDrags());
+  window.addEventListener('blur', () => A.cancelAllDrags());
 }
