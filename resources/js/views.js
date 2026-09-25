@@ -696,7 +696,7 @@ export function renderHomeMap(){
   // Phantom preview for a drag or resize. Always present so the drag can move
   // it directly without re-rendering the map on every frame.
   const ghost = UI.build
-    ? `<rect id="ghostRect" class="ghost" x="0" y="0" width="0" height="0" style="display:none"/>
+    ? `<rect id="ghostRect" class="dragghost" x="0" y="0" width="0" height="0" style="display:none"/>
        <text id="ghostLabel" class="ghostlabel" x="0" y="0" text-anchor="middle" style="display:none"></text>`
     : '';
   floors += `<rect x="0" y="0" width="${W}" height="${H}" fill="${TH.hall}"/><rect x="0" y="0" width="${W}" height="${H}" fill="url(#hall)"/>`;

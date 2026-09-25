@@ -344,7 +344,7 @@ function setGhost(rect, ok){
   const T = DB.home.grid.tile;
   g.setAttribute('x', rect.x * T); g.setAttribute('y', rect.y * T);
   g.setAttribute('width', rect.w * T); g.setAttribute('height', rect.h * T);
-  g.setAttribute('class', 'ghost ' + (ok ? 'ok' : 'bad'));
+  g.setAttribute('class', 'dragghost ' + (ok ? 'ok' : 'bad'));
   g.style.display = '';
   const lab = $('ghostLabel');
   if (lab){
