@@ -19,7 +19,7 @@
     "release": "npm run build:data && npm run build:sprites && npm run build:css && npm run bump",
     "check": "python build_sw.py --check",
     "verify": "npm run build && npm run check && npm test",
-    "test": "node test/rooms.test.mjs"
+    "test": "node test/rooms.test.mjs && node test/css.test.mjs"
   },
   "devDependencies": {
     "sass": "^1.77.0"

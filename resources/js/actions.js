@@ -344,7 +344,7 @@ function setGhost(rect, ok){
   const T = DB.home.grid.tile;
   g.setAttribute('x', rect.x * T); g.setAttribute('y', rect.y * T);
   g.setAttribute('width', rect.w * T); g.setAttribute('height', rect.h * T);
-  g.setAttribute('class', 'ghost ' + (ok ? 'ok' : 'bad'));
+  g.setAttribute('class', 'dragghost ' + (ok ? 'ok' : 'bad'));
   g.style.display = '';
   const lab = $('ghostLabel');
   if (lab){
@@ -374,11 +374,11 @@ export function roomDragStart(e, id, mode, wall){
 }
 
 export function roomDragMove(e){
-  if (!roomDrag) return;
+  if (!roomDrag) return false;
   const T = DB.home.grid.tile, g = DB.home.grid;
   const p = toSvg(roomDrag.svg, e.clientX, e.clientY);
   const dx = (p.x - roomDrag.startX) / T, dy = (p.y - roomDrag.startY) / T;
-  if (!roomDrag.moved && Math.abs(dx) < 0.4 && Math.abs(dy) < 0.4) return;
+  if (!roomDrag.moved && Math.abs(dx) < 0.4 && Math.abs(dy) < 0.4) return false;
   roomDrag.moved = true;
   const o = roomDrag.orig;
 
@@ -400,6 +400,7 @@ export function roomDragMove(e){
   roomDrag.ghost = rect;
   roomDrag.ok = ok;
   setGhost(rect, ok);
+  return true;
 }
 
 export function roomDragEnd(){
@@ -556,16 +557,35 @@ let trayDrag = null;
 
 export function trayDragStart(e, el){
   if (UI.build) return false;                   // room editing owns drags
-  if (!UI.arrange){ UI.arrange = true; renderHomeMap(); }   // turn it on for them
-  trayDrag = { id: el.dataset.tray, el, moved:false, sx:e.clientX, sy:e.clientY };
-  el.classList.add('dragging');
-  try { el.setPointerCapture(e.pointerId); } catch (err) {}
+
+  // Record the drag BEFORE anything can re-render, and never capture the
+  // pointer on this element. renderHomeMap() rebuilds the tray, so `el` would
+  // be detached the instant we touched it — the pointerup then fired on an
+  // orphaned node, never reached the document listener, and the drag stayed
+  // "active" forever. From then on every pointermove called preventDefault and
+  // silently swallowed every click in the app. Document-level listeners make
+  // pointer capture unnecessary anyway.
+  trayDrag = { id: el.dataset.tray, moved:false, sx:e.clientX, sy:e.clientY,
+               pointerId: e.pointerId };
+  if (!UI.arrange){ UI.arrange = true; renderHomeMap(); }
+  markTrayDragging(true);
   return true;
 }
+
+/* The tray is re-rendered constantly, so style the dragged row by id rather
+   than holding a reference to a node that may no longer exist. */
+function markTrayDragging(on){
+  document.querySelectorAll('.tray-item.dragging').forEach(n => n.classList.remove('dragging'));
+  if (on && trayDrag){
+    const n = document.querySelector(`[data-tray="${trayDrag.id}"]`);
+    if (n) n.classList.add('dragging');
+  }
+}
 export function trayDragMove(e){
-  if (!trayDrag) return;
-  if (!trayDrag.moved && Math.hypot(e.clientX-trayDrag.sx, e.clientY-trayDrag.sy) < DRAG_MIN) return;
+  if (!trayDrag) return false;
+  if (!trayDrag.moved && Math.hypot(e.clientX-trayDrag.sx, e.clientY-trayDrag.sy) < DRAG_MIN) return false;
   trayDrag.moved = true;
+  markTrayDragging(true);
   const svg = $('mapsvg'); if (!svg) return;
   const p = toSvg(svg, e.clientX, e.clientY);
   const over = roomAt(p.x, p.y);
@@ -573,12 +593,12 @@ export function trayDragMove(e){
   const near = slotAt(p.x, p.y);
   svg.querySelectorAll('.slotdot').forEach(d => d.classList.toggle('near',
     !!near && d.dataset.room === near.room && d.dataset.wall === near.wall && +d.dataset.slot === near.slot));
+  return true;
 }
 export function trayDragEnd(e){
   if (!trayDrag) return;
   const d = trayDrag; trayDrag = null;
-  d.el.classList.remove('dragging');
-  try { d.el.releasePointerCapture(e.pointerId); } catch (err) {}
+  markTrayDragging(false);
   if (!d.moved){ openModal(d.id); return; }        // a tap still opens the card
 
   const svg = $('mapsvg');
@@ -594,20 +614,39 @@ export function trayDragEnd(e){
 }
 export function trayDragging(){ return !!trayDrag; }
 
+/* Abandon anything in flight. Called on pointercancel, on lostpointercapture
+   and when the window loses focus, so a drag can never outlive the gesture
+   that began it — a stuck drag used to make the entire UI unclickable. */
+export function cancelAllDrags(){
+  const had = !!(trayDrag || drag || roomDrag || chunkDragging());
+  trayDrag = null;
+  drag = null;
+  roomDrag = null;
+  chunkUp();
+  markTrayDragging(false);
+  document.querySelectorAll('.plant-g.dragging').forEach(n => n.classList.remove('dragging'));
+  hideGhost();
+  if (had && UI.view === 'home') renderHomeMap();
+  return had;
+}
+
 export function dragStart(e, g){
   if (!UI.arrange) return false;
   const svg = $('mapsvg'); if (!svg) return false;
   const p = toSvg(svg, e.clientX, e.clientY);
   drag = { id:g.dataset.plant, g, svg, startX:p.x, startY:p.y,
            hx:+g.dataset.hx, hy:+g.dataset.hy, moved:false, room:null };
-  try { g.setPointerCapture(e.pointerId); } catch (err) {}
+  // No pointer capture here either: the map re-renders during a drag and the
+  // captured <g> would be replaced, stranding the gesture.
   return true;
 }
 export function dragMove(e){
-  if (!drag) return;
+  if (!drag) return false;
+  // the node can vanish if anything re-rendered mid-gesture
+  if (!drag.g.isConnected){ drag = null; return false; }
   const p = toSvg(drag.svg, e.clientX, e.clientY);
   const dx = p.x - drag.startX, dy = p.y - drag.startY;
-  if (!drag.moved && Math.hypot(dx, dy) < DRAG_MIN) return;
+  if (!drag.moved && Math.hypot(dx, dy) < DRAG_MIN) return false;
   drag.moved = true;
   drag.g.classList.add('dragging');
   drag.g.setAttribute('transform', `translate(${drag.hx + dx},${drag.hy + dy})`);
@@ -617,12 +656,12 @@ export function dragMove(e){
     drag.svg.querySelectorAll('.droptarget').forEach(t =>
       t.classList.toggle('over', t.dataset.room === over));
   }
+  return true;
 }
 export function dragEnd(e){
   if (!drag) return;
   const d = drag; drag = null;
-  try { d.g.releasePointerCapture(e.pointerId); } catch (err) {}
-  d.g.classList.remove('dragging');
+  if (d.g.isConnected) d.g.classList.remove('dragging');
   if (!d.moved){ openModal(d.id); return; }          // never travelled → it was a tap
 
   const pl = plant(d.id);

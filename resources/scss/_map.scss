@@ -279,8 +279,13 @@ button.danger-t { color:var(--clay); }
   .planttray.buildpanel { flex:1 1 100%; }
 }
 
-/* phantom preview while dragging or resizing a room */
-.ghost {
+/* Phantom preview while dragging or resizing a room.
+   NOT `.ghost` — that is the secondary *button* style in _base.scss, and a bare
+   `.ghost { pointer-events:none }` here silently killed every ghost button in
+   the app (Arrange plants, Edit rooms, all the room-edit controls). They still
+   looked right, because button.ghost outranks .ghost on colour, but nothing
+   declared pointer-events in _base so this rule won unopposed. */
+.dragghost {
   fill:rgba(124,214,120,.18); stroke:#7cd678; stroke-width:3; stroke-dasharray:7 5;
   pointer-events:none;
   &.bad { fill:rgba(220,90,70,.18); stroke:#dc5a46; }
