@@ -1,6 +1,6 @@
 {
   "name": "alpj-ranch",
-  "version": "5.1.4",
+  "version": "5.1.5",
   "private": true,
   "description": "Offline-capable plant-care dashboard for a low-light San Jose apartment.",
   "homepage": "https://evangelistapjc.github.io/alpj-ranch/",
